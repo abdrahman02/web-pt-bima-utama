@@ -4,18 +4,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    {{--
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('img/Logo-Tut-Wuri-Handayani.png') }}"> --}}
-    {{--
-    <link rel="icon" type="image/png" href="{{ asset('img/Logo-Tut-Wuri-Handayani.png') }}"> --}}
+
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('img/logo-pt.jpg') }}">
+
+    <link rel="icon" type="image/png" href="{{ asset('img/logo-pt.jpg') }}">
     <title>
-        PT. BIMA UTAMA
+        PT. DAHLIA BINA UTAMA
     </title>
     <!-- Nucleo Icons -->
     <link href="{{ asset('auth/css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('auth/css/nucleo-svg.css') }}" rel="stylesheet" />
     <!-- Font Awesome Icons -->
     <script src="{{ asset('auth/js/kitfontawesome.js') }}"></script>
+    <script src="https://kit.fontawesome.com/23ce94eee2.js" crossorigin="anonymous"></script>
     <link href="{{ asset('auth/css/nucleo-svg.css') }}" rel="stylesheet" />
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('auth/css/argon-dashboard.css') }}" rel="stylesheet" />
@@ -34,12 +35,23 @@
                                         LOGIN
                                     </h4>
                                     <div class="pb-0 text-start mx-auto">
-                                        <img src="backend/assets/img/Logo-Tut-Wuri-Handayani.png" alt="logo"
-                                            style="height: 100px;">
+                                        <img src="img/logo-pt.jpg" alt="logo" style="height: 50px;">
                                     </div>
                                 </div>
                             </div>
                             <div class="card-body">
+
+                                {{-- Alert --}}
+                                @if (session()->has('error'))
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <span class="alert-text">{{ session('error') }}</span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                @endif
+
+
                                 <form action="{{ route('authenticate') }}" method="post">
                                     @csrf
                                     <div class="mb-3">
@@ -64,10 +76,10 @@
         </section>
     </main>
     <!--   Core JS Files   -->
-    <script src="{{ asset('backend/assets/js/core/popper.min.js') }}"></script>
-    <script src="{{ asset('backend/assets/js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('auth/js/popper.min.js') }}"></script>
+    <script src="{{ asset('auth/js/bootstrap.min.js') }}"></script>
     <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-    <script src="{{ asset('backend/assets/js/argon-dashboard.min.js') }}"></script>
+    <script src="{{ asset('auth/js/argon-dashboard.min.js') }}"></script>
 </body>
 
 </html>
