@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Barang;
 use Illuminate\Http\Request;
 
 class BarangController extends Controller
@@ -12,7 +13,8 @@ class BarangController extends Controller
      */
     public function index()
     {
-        //
+        $barangs = Barang::latest()->paginate(10)->withQueryString();
+        return view('backend.barang.index', compact('barangs'));
     }
 
     /**
@@ -28,7 +30,21 @@ class BarangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nama_barang' => 'required',
+            'jenis' => 'required',
+            'harga_beli' => 'required',
+            'harga_jual' => 'required'
+        ]);
+
+        $item = new Barang();
+        $item->nama_barang = $request->nama_barang;
+        $item->jenis = $request->jenis;
+        $item->harga_beli = $request->harga_beli;
+        $item->harga_jual = $request->harga_jual;
+        $item->save();
+
+        return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
     }
 
     /**
@@ -52,7 +68,21 @@ class BarangController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nama_barang' => 'required|string',
+            'jenis' => 'required',
+            'harga_beli' => 'required',
+            'harga_jual' => 'required'
+        ]);
+
+        $item = Barang::findOrFail($id);
+        $item->nama_barang = $request->nama_barang;
+        $item->jenis = $request->jenis;
+        $item->harga_beli = $request->harga_beli;
+        $item->harga_jual = $request->harga_jual;
+        $item->save();
+
+        return back()->with('success', 'Sukses, 1 Data berhasil perbaharui!');
     }
 
     /**
@@ -60,6 +90,9 @@ class BarangController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $item = Barang::findorFail($id);
+        $item->delete();
+
+        return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
 }
