@@ -3,9 +3,9 @@
 <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Tabel Pelanggan</h4>
+            <h4 class="card-title">Tabel Suplier</h4>
             <p class="card-description">
-                Daftar Pelanggan
+                Daftar Suplier
             </p>
 
             {{-- Alert Success --}}
@@ -56,23 +56,23 @@
                 </div>
 
                 <table class="table table-hover">
-                    @if ($pelanggans->isNotEmpty())
+                    @if ($supliers->isNotEmpty())
                     <thead>
                         <tr>
                             <th class="text-center">No</th>
-                            <th class="text-center">Id Pelanggan</th>
-                            <th class="text-center">Nama Pelanggan</th>
+                            <th class="text-center">Id Suplier</th>
+                            <th class="text-center">Nama Suplier</th>
                             <th class="text-center">Nomor Telepon</th>
                             <th class="text-center">Alamat</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($pelanggans as $key => $item)
+                        @foreach ($supliers as $key => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $pelanggans->firstItem() + $key }}</td>
+                            <td class="text-center">{{ $supliers->firstItem() + $key }}</td>
                             <td class="text-center">{{ $item->id }}</td>
-                            <td class="text-center">{{ $item->nama_pelanggan }}</td>
+                            <td class="text-center">{{ $item->nama_suplier }}</td>
                             <td class="text-center">{{ $item->no_telp }}</td>
                             <td class="text-center">{{ Str::words($item->alamat, 3) }}</td>
                             <td class="d-flex justify-content-center">
@@ -83,7 +83,7 @@
                                 <a class="badge badge-danger link-danger ms-3" title="Hapus" href="" onclick="if(confirm('Apakah anda yakin?')) {
                                 event.preventDefault(); document.getElementById('delete-form').submit()};">
                                     <i class="mdi mdi-minus-box"></i>
-                                    <form action="{{ route('client.destroy', $item->id) }}" method="post"
+                                    <form action="{{ route('suplier.destroy', $item->id) }}" method="post"
                                         id="delete-form" class="d-none">
                                         @csrf
                                         @method('delete')
@@ -100,7 +100,7 @@
                     @endif
                 </table>
                 <div class="d-flex justify-content-center">
-                    {{ $pelanggans->links() }}
+                    {{ $supliers->links() }}
                 </div>
             </div>
         </div>
@@ -113,14 +113,14 @@
 <div class="modal fade" id="modal-tbh-item" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('client.store') }}" method="POST">
+            <form action="{{ route('suplier.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="p-3">
                         <div class="form-group">
-                            <label for="nama_pelanggan">Nama Pelanggan</label>
-                            <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan"
-                                placeholder="Nama pelanggan" autofocus required value="{{ old('nama_pelanggan') }}">
+                            <label for="nama_suplier">Nama Suplier</label>
+                            <input type="text" class="form-control" id="nama_suplier" name="nama_suplier"
+                                placeholder="Nama suplier" autofocus required value="{{ old('nama_suplier') }}">
                         </div>
                         <div class="form-group">
                             <label for="no_telp">Nomor Telepon</label>
@@ -148,20 +148,20 @@
 
 
 {{-- Modal Ubah Data --}}
-@foreach ($pelanggans as $item)
+@foreach ($supliers as $item)
 <div class="modal fade" id="modal-ubh-item{{ $item->id }}" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('client.update', $item->id) }}" method="POST">
+            <form action="{{ route('suplier.update', $item->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
                     <div class="p-3">
                         <div class="form-group">
-                            <label for="nama_pelanggan">Nama Pelanggan</label>
-                            <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan"
-                                placeholder="Nama pelanggan" autofocus required
-                                value="{{ old('nama_pelanggan', $item->nama_pelanggan) }}">
+                            <label for="nama_suplier">Nama Suplier</label>
+                            <input type="text" class="form-control" id="nama_suplier" name="nama_suplier"
+                                placeholder="Nama suplier" autofocus required
+                                value="{{ old('nama_suplier', $item->nama_suplier) }}">
                         </div>
                         <div class="form-group">
                             <label for="no_telp">Nomor Telepon</label>

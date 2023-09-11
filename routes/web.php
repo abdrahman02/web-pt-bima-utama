@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Backend\BarangController;
 use App\Http\Controllers\Backend\DataController;
 use App\Http\Controllers\Backend\ClientController;
+use App\Http\Controllers\Backend\SuplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +25,12 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->prefix('input')->group(function () {
     Route::resource('/client', ClientController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
+    Route::resource('/suplier', SuplierController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
+    Route::resource('/barang', BarangController::class)->only([
         'index', 'store', 'update', 'destroy'
     ]);
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
