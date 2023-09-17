@@ -33,15 +33,11 @@ class BarangController extends Controller
         $request->validate([
             'nama_barang' => 'required',
             'jenis' => 'required',
-            'harga_beli' => 'required',
-            'harga_jual' => 'required'
         ]);
 
         $item = new Barang();
         $item->nama_barang = $request->nama_barang;
         $item->jenis = $request->jenis;
-        $item->harga_beli = $request->harga_beli;
-        $item->harga_jual = $request->harga_jual;
         $item->save();
 
         return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
@@ -71,14 +67,12 @@ class BarangController extends Controller
         $request->validate([
             'nama_barang' => 'required|string',
             'jenis' => 'required',
-            'harga_beli' => 'required',
             'harga_jual' => 'required'
         ]);
 
         $item = Barang::findOrFail($id);
         $item->nama_barang = $request->nama_barang;
         $item->jenis = $request->jenis;
-        $item->harga_beli = $request->harga_beli;
         $item->harga_jual = $request->harga_jual;
         $item->save();
 

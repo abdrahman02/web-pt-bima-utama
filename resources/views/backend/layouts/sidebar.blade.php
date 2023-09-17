@@ -34,14 +34,16 @@
       <div class="collapse" id="transaksi">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
+            <a class="nav-link {{ Request::is('transaksi/proyek*') ? 'active' : '' }}"
+              href="/transaksi/proyek">Proyek</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {{ Request::is('transaksi/pemakaian*') ? 'active' : '' }}"
               href="/transaksi/pemakaian">Pemakaian</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {{ Request::is('transaksi/pembelian*') ? 'active' : '' }}" href="#">Pembelian</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {{ Request::is('transaksi/proyek*') ? 'active' : '' }}" href="#">Proyek</a>
+            <a class="nav-link {{ Request::is('transaksi/pembelian*') ? 'active' : '' }}"
+              href="/transaksi/pembelian">Pembelian</a>
           </li>
         </ul>
       </div>

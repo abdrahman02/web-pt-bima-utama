@@ -38,7 +38,7 @@
 
                     <div class="form-group col-6">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Recipient's username"
+                            <input type="text" class="form-control" placeholder="Masukkan kata kunci..."
                                 aria-label="Recipient's username">
                             <div class="input-group-append">
                                 <button class="btn btn-sm btn-primary" type="button">Cari</button>

@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Backend\BarangController;
-use App\Http\Controllers\Backend\DataController;
 use App\Http\Controllers\Backend\ClientController;
+use App\Http\Controllers\Backend\PemakaianController;
+use App\Http\Controllers\Backend\PembelianController;
+use App\Http\Controllers\Backend\ProyekController;
 use App\Http\Controllers\Backend\SuplierController;
 
 /*
@@ -34,6 +36,14 @@ Route::middleware('auth')->prefix('input')->group(function () {
         'index', 'store', 'update', 'destroy'
     ]);
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+Route::middleware('auth')->prefix('transaksi')->group(function () {
+    Route::resource('/proyek', ProyekController::class);
+    Route::resource('/pembelian', PembelianController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
+    Route::resource('/pemakaian', PemakaianController::class);
 });
 
 Route::get('/home', function () {

@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Barang extends Model
 {
     use HasFactory;
+
+    protected $guarded = ['id'];
+
+    public function pembelian() {
+        return $this->hasMany(Pembelian::class);
+    }
 }
