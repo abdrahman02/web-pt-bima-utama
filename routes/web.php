@@ -43,7 +43,9 @@ Route::middleware('auth')->prefix('transaksi')->group(function () {
     Route::resource('/pembelian', PembelianController::class)->only([
         'index', 'store', 'update', 'destroy'
     ]);
-    Route::resource('/pemakaian', PemakaianController::class);
+    Route::resource('/pemakaian', PemakaianController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
 });
 
 Route::get('/home', function () {

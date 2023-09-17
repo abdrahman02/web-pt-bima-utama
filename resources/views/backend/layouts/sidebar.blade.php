@@ -58,8 +58,7 @@
       <div class="collapse" id="laporan">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link {{ Request::is('laporan/pemakaian*') ? 'active' : '' }}"
-              href="/laporan/pemakaian">Pemakaian</a>
+            <a class="nav-link {{ Request::is('laporan/pemakaian*') ? 'active' : '' }}" href="#">Pemakaian</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {{ Request::is('laporan/pembelian*') ? 'active' : '' }}" href="#">Pembelian</a>
