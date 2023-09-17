@@ -16,11 +16,17 @@
     <link rel="stylesheet" href="{{ asset('backend/vendor/css/vendor.bundle.base.css') }}">
     <!-- endinject -->
 
+    {{-- SELECT2 --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    {{-- EndSelect2 --}}
+
     <!-- inject:css -->
     <link rel="stylesheet" href="{{ asset('backend/css/vertical-layout-light/style.css') }}">
     <!-- endinject -->
 
     <link rel="shortcut icon" href="{{ asset('img/logo-pt.jpg') }}" type="image/x-icon">
+
+    @stack('custom-css')
 </head>
 
 <body>
@@ -68,7 +74,9 @@
     <script src="{{ asset('backend/js/settings.js') }}"></script>
     <script src="{{ asset('backend/js/todolist.js') }}"></script>
     <!-- endinject -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    @stack('custom-js')
 
 </body>
 

@@ -38,7 +38,7 @@
 
                     <div class="form-group col-6">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Recipient's username"
+                            <input type="text" class="form-control" placeholder="Masukkan kata kunci..."
                                 aria-label="Recipient's username">
                             <div class="input-group-append">
                                 <button class="btn btn-sm btn-primary" type="button">Cari</button>
@@ -62,8 +62,8 @@
                             <th class="text-center">No</th>
                             <th class="text-center">Id Barang</th>
                             <th class="text-center">Nama Barang</th>
+                            <th class="text-center">Stok</th>
                             <th class="text-center">Jenis</th>
-                            <th class="text-center">Harga Beli</th>
                             <th class="text-center">Harga Jual</th>
                             <th class="text-center">Aksi</th>
                         </tr>
@@ -73,10 +73,14 @@
                         <tr class="align-middle">
                             <td class="text-center">{{ $barangs->firstItem() + $key }}</td>
                             <td class="text-center">{{ $item->id }}</td>
-                            <td class="text-center">{{ $item->nama_pelanggan }}</td>
+                            <td class="text-center">{{ $item->nama_barang }}</td>
+                            <td class="text-center">{{ $item->stok }}</td>
                             <td class="text-center">{{ $item->jenis }}</td>
-                            <td class="text-center">{{ $item->harga_beli }}</td>
+                            @if (empty($item->harga_jual))
+                            <td class="text-center text-warning">Belum diatur</td>
+                            @else
                             <td class="text-center">{{ $item->harga_jual }}</td>
+                            @endif
                             <td class="d-flex justify-content-center">
                                 <a class="badge badge-warning link-warning" title="Edit" href="#" data-bs-toggle="modal"
                                     data-bs-target="#modal-ubh-item{{ $item->id }}">
@@ -129,16 +133,6 @@
                             <input type="text" class="form-control" id="jenis" name="jenis" placeholder="Jenis" required
                                 value="{{ old('jenis') }}">
                         </div>
-                        <div class="form-group">
-                            <label for="harga_beli">Harga Beli</label>
-                            <input type="text" class="form-control" id="harga_beli" name="harga_beli"
-                                placeholder="Harga beli" required value="{{ old('harga_beli') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="harga_jual">Harga Jual</label>
-                            <input type="text" class="form-control" id="harga_jual" name="harga_jual"
-                                placeholder="Harga jual" required value="{{ old('harga_jual') }}">
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -174,11 +168,6 @@
                             <label for="jenis">Jenis</label>
                             <input type="text" class="form-control" id="jenis" name="jenis" placeholder="Jenis"
                                 value="{{ old('jenis', $item->jenis) }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="harga_beli">Harga Beli</label>
-                            <input type="text" class="form-control" id="harga_beli" name="harga_beli"
-                                placeholder="Harga beli" value="{{ old('harga_beli', $item->harga_beli) }}" required>
                         </div>
                         <div class="form-group">
                             <label for="harga_jual">Harga Jual</label>
