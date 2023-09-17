@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Barang;
+use App\Models\Pemakaian;
 use Illuminate\Http\Request;
 
 class PemakaianController extends Controller
@@ -12,7 +14,9 @@ class PemakaianController extends Controller
      */
     public function index()
     {
-        //
+        $pemakaians = Pemakaian::latest()->paginate(10)->withQueryString();
+        $barangs = Barang::all();
+        return view('backend.pemakaian.index', compact('pemakaians', 'barangs'));
     }
 
     /**
@@ -28,7 +32,27 @@ class PemakaianController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'barang_id' => 'required',
+            'jenis_pemakaian' => 'required',
+            'tgl_pemakaian' => 'required',
+            'jumlah' => 'required',
+        ]);
+
+        $item = new Pemakaian();
+        $item->barang_id = $request->barang_id;
+        $item->jenis_pemakaian = $request->jenis_pemakaian;
+        $item->tgl_pemakaian = $request->tgl_pemakaian;
+        $item->jumlah = $request->jumlah;
+        $item->save();
+
+        $item = Barang::findOrFail($request->barang_id);
+        if ($item) {
+            $item->update([
+                'stok' => max(0, $item->stok - $request->jumlah),
+            ]);
+        }
+        return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
     }
 
     /**
@@ -52,7 +76,31 @@ class PemakaianController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'barang_id' => 'required',
+            'jenis_pemakaian' => 'required',
+            'tgl_pemakaian' => 'required',
+            'jumlah' => 'required',
+        ]);
+
+        $item = Pemakaian::findOrFail($id);
+        $jumlahLama = $item->jumlah;
+        $item->barang_id = $request->barang_id;
+        $item->jenis_pemakaian = $request->jenis_pemakaian;
+        $item->tgl_pemakaian = $request->tgl_pemakaian;
+        $item->jumlah = $request->jumlah;
+        $item->update();
+        $perubahanJumlah = $request->jumlah - $jumlahLama;
+
+        $barang = Barang::findOrFail($item->barang_id);
+        if ($barang) {
+            $stok = $barang->stok - $perubahanJumlah;
+            $barang->update([
+                'stok' => max(0, $stok),
+            ]);
+        }
+
+        return back()->with('success', 'Sukses, 1 Data berhasil diperbaharui!');
     }
 
     /**
@@ -60,6 +108,18 @@ class PemakaianController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $item = Pemakaian::findOrFail($id);
+        $perubahanJumlah = $item->jumlah;
+        $barang = Barang::findOrFail($item->barang_id);
+        if ($barang) {
+            $stok = $barang->stok + $perubahanJumlah;
+            $barang->update([
+                'stok' => max(0, $stok),
+            ]);
+        }
+
+        $item->delete();
+
+        return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
 }

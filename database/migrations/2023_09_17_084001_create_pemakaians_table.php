@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('pemakaians', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('barang_id');
+            $table->foreign('barang_id')->references('id')->on('barangs')->onDelete('cascade');
+            $table->string('jenis_pemakaian');
+            $table->string('tgl_pemakaian');
+            $table->string('jumlah');
             $table->timestamps();
         });
     }
