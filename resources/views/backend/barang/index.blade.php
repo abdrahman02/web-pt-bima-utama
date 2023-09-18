@@ -79,7 +79,7 @@
                             @if (empty($item->harga_jual))
                             <td class="text-center text-warning">Belum diatur</td>
                             @else
-                            <td class="text-center">{{ $item->harga_jual }}</td>
+                            <td class="text-center">{{ $item->harga_jual . '/' . $item->jenis }}</td>
                             @endif
                             <td class="d-flex justify-content-center">
                                 <a class="badge badge-warning link-warning" title="Edit" href="#" data-bs-toggle="modal"

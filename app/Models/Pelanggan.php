@@ -11,4 +11,8 @@ class Pelanggan extends Model
 
     protected $guarded = ['id'];
 
+    public function proyek()
+    {
+        return $this->hasMany(Proyek::class);
+    }
 }

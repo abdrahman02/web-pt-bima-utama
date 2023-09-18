@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('pelanggan_id');
             $table->foreign('pelanggan_id')->references('id')->on('pelanggans')->onDelete('cascade');
             $table->string('no_fakt_proyek');
+            $table->string('tgl_proyek');
             $table->string('jumlah');
             $table->string('harga');
             $table->string('jumlah_bayar');

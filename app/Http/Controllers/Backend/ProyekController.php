@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Barang;
+use App\Models\Pelanggan;
+use App\Models\Proyek;
 use Illuminate\Http\Request;
 
 class ProyekController extends Controller
@@ -12,7 +15,10 @@ class ProyekController extends Controller
      */
     public function index()
     {
-        
+        $proyeks = Proyek::latest()->paginate(10)->withQueryString();
+        $barangs = Barang::all();
+        $pelanggans = Pelanggan::all();
+        return view('backend.proyek.index', compact('proyeks', 'barangs', 'pelanggans'));
     }
 
     /**
@@ -28,7 +34,35 @@ class ProyekController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'barang_id' => 'required',
+            'pelanggan_id' => 'required',
+            'no_fakt_proyek' => 'required',
+            'tgl_proyek' => 'required',
+            'jumlah' => 'required',
+            'status' => 'required',
+            'harga' => 'required',
+            'jumlah_bayar' => 'required'
+        ]);
+
+        $item = new Proyek();
+        $item->barang_id = $request->barang_id;
+        $item->pelanggan_id = $request->pelanggan_id;
+        $item->no_fakt_proyek = $request->no_fakt_proyek;
+        $item->tgl_proyek = $request->tgl_proyek;
+        $item->jumlah = $request->jumlah;
+        $item->status = $request->status;
+        $item->harga = $request->harga;
+        $item->jumlah_bayar = $request->jumlah_bayar;
+        $item->save();
+
+        $item = Barang::findOrFail($request->barang_id);
+        if ($item) {
+            $item->update([
+                'stok' => max(0, $item->stok - $request->jumlah),
+            ]);
+        }
+        return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
     }
 
     /**
