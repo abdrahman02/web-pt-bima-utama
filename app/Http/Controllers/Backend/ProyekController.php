@@ -86,7 +86,38 @@ class ProyekController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'pelanggan_id' => 'required',
+            'no_fakt_proyek' => 'required',
+            'tgl_proyek' => 'required',
+            'jumlah' => 'required',
+            'status' => 'required',
+            'harga' => 'required',
+            'jumlah_bayar' => 'required'
+        ]);
+
+        $item = Proyek::findOrFail($id);
+        // Simpan jumlah lama pembelian sebelum diperbarui
+        $jumlahLama = $item->jumlah;
+        $item->pelanggan_id = $request->pelanggan_id;
+        $item->no_fakt_proyek = $request->no_fakt_proyek;
+        $item->tgl_proyek = $request->tgl_proyek;
+        $item->jumlah = $request->jumlah;
+        $item->status = $request->status;
+        $item->harga = $request->harga;
+        $item->jumlah_bayar = $request->jumlah_bayar;
+        $item->update();
+
+        $perubahanJumlah = $request->jumlah - $jumlahLama;
+        $barang = Barang::findOrFail($item->barang_id);
+        if ($barang) {
+            $stok = $barang->stok - $perubahanJumlah;
+            $barang->update([
+                'stok' => max(0, $stok),
+            ]);
+        }
+
+        return back()->with('success', 'Sukses, 1 Data berhasil diperbaharui!');
     }
 
     /**
@@ -94,6 +125,18 @@ class ProyekController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $item = Proyek::findOrFail($id);
+        $perubahanJumlah = $item->jumlah;
+        $barang = Barang::findOrFail($item->barang_id);
+        if ($barang) {
+            $stok = $barang->stok + $perubahanJumlah;
+            $barang->update([
+                'stok' => max(0, $stok),
+            ]);
+        }
+
+        $item->delete();
+
+        return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
 }

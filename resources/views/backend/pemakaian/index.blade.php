@@ -176,7 +176,7 @@
                             <div class="form-group col-lg-6">
                                 <label for="barang_id" class="d-flex">Barang</label>
                                 <select class="form-control" id="barang_id" name="barang_id" style="width: 100%"
-                                    required readonly>
+                                    required disabled>
                                     @if (empty($item->barang->nama_barang))
                                     <option value="" selected>-- PILIH --</option>
                                     @endif
