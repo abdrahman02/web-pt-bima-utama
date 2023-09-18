@@ -209,9 +209,9 @@
                     <div class="p-3">
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="barang_id" class="d-flex">Barang</label>
-                                <select class="form-control" id="barang_id" name="barang_id" style="width: 100%"
-                                    required readonly>
+                                <label for="barang_id{{ $item->id }}" class="d-flex">Barang</label>
+                                <select class="form-control" id="barang_id{{ $item->id }}" name="barang_id"
+                                    style="width: 100%" disabled>
                                     @if (empty($item->barang->nama_barang))
                                     <option value="" selected>-- PILIH --</option>
                                     @endif
@@ -260,9 +260,9 @@
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="jumlah">Jumlah</label>
-                                <input type="text" class="form-control" id="jumlah" name="jumlah" placeholder="Jumlah"
-                                    required value="{{ old('jumlah', $item->jumlah) }}">
+                                <label for="jumlah{{ $item->id }}">Jumlah</label>
+                                <input type="text" class="form-control" id="jumlah{{ $item->id }}" name="jumlah"
+                                    placeholder="Jumlah" required value="{{ old('jumlah', $item->jumlah) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="status">Status</label>
@@ -272,9 +272,9 @@
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="harga">Harga</label>
-                                <input type="text" class="form-control" id="harga" name="harga" placeholder="Harga"
-                                    required value="{{ old('harga', $item->harga) }}">
+                                <label for="harga{{ $item->id }}">Harga</label>
+                                <input type="text" class="form-control" id="harga{{ $item->id }}" name="harga"
+                                    placeholder="Harga" required readonly value="{{ old('harga', $item->harga) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="jumlah_bayar">Jumlah Bayar</label>
@@ -355,4 +355,48 @@ $(document).ready(function() {
         }
     });
 </script>
+
+
+@foreach ($proyeks as $item)
+<script>
+    $(document).ready(function() {
+        // Dapatkan referensi ke elemen yang dibutuhkan dalam modal update data ini
+        var barangSelect{{ $item->id }} = $("#barang_id{{ $item->id }}");
+        var jumlahInput{{ $item->id }} = $("#jumlah{{ $item->id }}");
+        var hargaInput{{ $item->id }} = $("#harga{{ $item->id }}");
+
+        // Tambahkan event listener ke elemen barang_id dan jumlah dalam modal ini
+        barangSelect{{ $item->id }}.change(updateHarga{{ $item->id }});
+        jumlahInput{{ $item->id }}.keyup(updateHarga{{ $item->id }});
+
+        function updateHarga{{ $item->id }}() {
+            var selectedBarangId = barangSelect{{ $item->id }}.val();
+            var jumlah = parseInt(jumlahInput{{ $item->id }}.val());
+
+            if (!isNaN(jumlah)) {
+                // Temukan harga satuan berdasarkan ID barang dalam data yang sudah ada
+                var hargaSatuan = null;
+                $.each(barangs, function(index, barang) {
+                    if (barang.id == selectedBarangId) {
+                        hargaSatuan = barang.harga_jual;
+                        return false; // Keluar dari loop
+                    }
+                });
+
+                if (hargaSatuan !== null) {
+                    // Hitung harga total
+                    var totalHarga = hargaSatuan * jumlah;
+
+                    // Masukkan harga total ke dalam input harga
+                    hargaInput{{ $item->id }}.val(totalHarga);
+                } else {
+                    hargaInput{{ $item->id }}.val(""); // Kosongkan input harga jika harga satuan tidak ditemukan
+                }
+            } else {
+                hargaInput{{ $item->id }}.val(""); // Kosongkan input harga jika jumlah tidak valid
+            }
+        }
+    });
+</script>
+@endforeach
 @endpush
