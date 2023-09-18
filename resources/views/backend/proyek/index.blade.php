@@ -3,9 +3,9 @@
 <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Tabel Pembelian</h4>
+            <h4 class="card-title">Tabel Proyek</h4>
             <p class="card-description">
-                Daftar Pembelian
+                Daftar Proyek
             </p>
 
             {{-- Alert Success --}}
@@ -56,13 +56,13 @@
                 </div>
 
                 <table class="table table-hover">
-                    @if ($pembelians->isNotEmpty())
+                    @if ($proyeks->isNotEmpty())
                     <thead>
                         <tr>
                             <th class="text-center">No</th>
                             <th class="text-center">Nama Barang</th>
-                            <th class="text-center">Suplier</th>
-                            <th class="text-center">Tanggal Pembelian</th>
+                            <th class="text-center">Pelanggan</th>
+                            <th class="text-center">Tanggal Proyek</th>
                             <th class="text-center">Jumlah</th>
                             <th class="text-center">Harga</th>
                             <th class="text-center">Jumlah Bayar</th>
@@ -70,12 +70,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($pembelians as $key => $item)
+                        @foreach ($proyeks as $key => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $pembelians->firstItem() + $key }}</td>
+                            <td class="text-center">{{ $proyeks->firstItem() + $key }}</td>
                             <td class="text-center">{{ $item->barang->nama_barang }}</td>
-                            <td class="text-center">{{ $item->suplier->nama_suplier }}</td>
-                            <td class="text-center">{{ $item->tgl_pembelian }}</td>
+                            <td class="text-center">{{ $item->pelanggan->nama_pelanggan }}</td>
+                            <td class="text-center">{{ $item->tgl_proyek }}</td>
                             <td class="text-center">{{ $item->jumlah }}</td>
                             <td class="text-center">{{ $item->harga }}</td>
                             <td class="text-center">{{ $item->jumlah_bayar }}</td>
@@ -87,7 +87,7 @@
                                 <a class="badge badge-danger link-danger ms-3" title="Hapus" href="" onclick="if(confirm('Apakah anda yakin?')) {
                                 event.preventDefault(); document.getElementById('delete-form').submit()};">
                                     <i class="mdi mdi-minus-box"></i>
-                                    <form action="{{ route('pembelian.destroy', $item->id) }}" method="post"
+                                    <form action="{{ route('proyek.destroy', $item->id) }}" method="post"
                                         id="delete-form" class="d-none">
                                         @csrf
                                         @method('delete')
@@ -104,7 +104,7 @@
                     @endif
                 </table>
                 <div class="d-flex justify-content-center">
-                    {{ $pembelians->links() }}
+                    {{ $proyeks->links() }}
                 </div>
             </div>
         </div>
@@ -117,7 +117,7 @@
 <div class="modal fade" id="modal-tbh-item" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('pembelian.store') }}" method="POST">
+            <form action="{{ route('proyek.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="p-3">
@@ -129,32 +129,33 @@
                                     <option value="" selected>-- PILIH --</option>
                                     @foreach ($barangs as $barang)
                                     <option value="{{ $barang->id }}" @if (old('barang_id')===$barang->id)
-                                        selected @endif>{{ $barang->nama_barang }}</option>
+                                        selected @endif>{{
+                                        $barang->nama_barang }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="suplier_id" class="d-flex">Suplier</label>
-                                <select class="form-control" id="suplier_id" name="suplier_id" style="width: 100%"
+                                <label for="pelanggan_id" class="d-flex">Pelanggan</label>
+                                <select class="form-control" id="pelanggan_id" name="pelanggan_id" style="width: 100%"
                                     required>
                                     <option value="" selected>-- PILIH --</option>
-                                    @foreach ($supliers as $suplier)
-                                    <option value="{{ $suplier->id }}" @if (old('suplier_id')===$suplier->id)
-                                        selected @endif>{{ $suplier->nama_suplier }}</option>
+                                    @foreach ($pelanggans as $pelanggan)
+                                    <option value="{{ $pelanggan->id }}" @if (old('pelanggan_id')===$pelanggan->id)
+                                        selected @endif>{{ $pelanggan->nama_pelanggan }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="no_fakt_pembelian">No Faktur</label>
-                                <input type="text" class="form-control" id="no_fakt_pembelian" name="no_fakt_pembelian"
-                                    placeholder="No Faktur" required value="{{ old('no_fakt_pembelian') }}">
+                                <label for="no_fakt_proyek">No Faktur</label>
+                                <input type="text" class="form-control" id="no_fakt_proyek" name="no_fakt_proyek"
+                                    placeholder="No Faktur" required value="{{ old('no_fakt_proyek') }}">
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="tgl_pembelian">Tanggal Pembelian</label>
-                                <input type="date" class="form-control" id="tgl_pembelian" name="tgl_pembelian"
-                                    placeholder="Tanggal pembelian" required value="{{ old('tgl_pembelian') }}">
+                                <label for="tgl_proyek">Tanggal Proyek</label>
+                                <input type="date" class="form-control" id="tgl_proyek" name="tgl_proyek"
+                                    placeholder="Tanggal proyek" required value="{{ old('tgl_proyek') }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
@@ -173,7 +174,7 @@
                             <div class="form-group col-lg-6">
                                 <label for="harga">Harga</label>
                                 <input type="text" class="form-control" id="harga" name="harga" placeholder="Harga"
-                                    required value="{{ old('harga') }}">
+                                    required value="{{ old('harga') }}" readonly>
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="jumlah_bayar">Jumlah Bayar</label>
@@ -197,11 +198,11 @@
 
 
 {{-- Modal Ubah Data --}}
-@foreach ($pembelians as $item)
+@foreach ($proyeks as $item)
 <div class="modal fade" id="modal-ubh-item{{ $item->id }}" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('pembelian.update', $item->id) }}" method="POST">
+            <form action="{{ route('proyek.update', $item->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
@@ -225,18 +226,19 @@
                                 </select>
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="suplier_id" class="d-flex">Suplier</label>
-                                <select class="form-control" id="suplier_id" name="suplier_id" style="width: 100%"
+                                <label for="pelanggan_id" class="d-flex">Pelanggan</label>
+                                <select class="form-control" id="pelanggan_id" name="pelanggan_id" style="width: 100%"
                                     required>
-                                    @if (empty($item->suplier->nama_suplier))
+                                    @if (empty($item->pelanggan->nama_pelanggan))
                                     <option value="" selected>-- PILIH --</option>
                                     @endif
-                                    @foreach ($supliers as $suplier)
-                                    <option value="{{ $suplier->id }}" @if(old('suplier_id', $item->suplier_id) ===
-                                        $suplier->id)
+                                    @foreach ($pelanggans as $pelanggan)
+                                    <option value="{{ $pelanggan->id }}" @if(old('pelanggan_id', $item->pelanggan_id)
+                                        ===
+                                        $pelanggan->id)
                                         selected
                                         @endif>
-                                        {{ $suplier->nama_suplier }}
+                                        {{ $pelanggan->nama_pelanggan }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -244,16 +246,16 @@
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="no_fakt_pembelian">No Faktur</label>
-                                <input type="text" class="form-control" id="no_fakt_pembelian" name="no_fakt_pembelian"
+                                <label for="no_fakt_proyek">No Faktur</label>
+                                <input type="text" class="form-control" id="no_fakt_proyek" name="no_fakt_proyek"
                                     placeholder="No Faktur" required
-                                    value="{{ old('no_fakt_pembelian', $item->no_fakt_pembelian) }}">
+                                    value="{{ old('no_fakt_proyek', $item->no_fakt_proyek) }}">
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="tgl_pembelian">Tanggal Pembelian</label>
-                                <input type="date" class="form-control" id="tgl_pembelian" name="tgl_pembelian"
-                                    placeholder="Tanggal pembelian" required
-                                    value="{{ old('tgl_pembelian', $item->tgl_pembelian) }}">
+                                <label for="tgl_proyek">Tanggal Proyek</label>
+                                <input type="date" class="form-control" id="tgl_proyek" name="tgl_proyek"
+                                    placeholder="Tanggal proyek" required
+                                    value="{{ old('tgl_proyek', $item->tgl_proyek) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
@@ -298,14 +300,59 @@
 <script>
     // In your Javascript (external .js resource or <script> tag)
 $(document).ready(function() {
-    $('#suplier_id').select2({
+    $('#pelanggan_id').select2({
         dropdownParent: $('#modal-tbh-item'),
-        placeholder: "Pilih suplier",
+        placeholder: "Pilih pelanggan",
     });
     $('#barang_id').select2({
         dropdownParent: $('#modal-tbh-item'),
         placeholder: "Pilih barang",
     });
 });
+</script>
+
+<script>
+    var barangs = @json($barangs);
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Dapatkan referensi ke elemen yang dibutuhkan
+        var barangSelect = $("#barang_id");
+        var jumlahInput = $("#jumlah");
+        var hargaInput = $("#harga");
+
+        // Tambahkan event listener ke elemen barang_id dan jumlah
+        barangSelect.change(updateHarga);
+        jumlahInput.keyup(updateHarga);
+
+        function updateHarga() {
+            var selectedBarangId = barangSelect.val();
+            var jumlah = parseInt(jumlahInput.val());
+            
+            if (!isNaN(jumlah)) {
+                // Temukan harga satuan berdasarkan ID barang dalam data yang sudah ada
+                var hargaSatuan = null;
+                $.each(barangs, function(index, barang) {
+                    if (barang.id == selectedBarangId) {
+                        hargaSatuan = barang.harga_jual;
+                        return false; // Keluar dari loop
+                    }
+                });
+
+                if (hargaSatuan !== null) {
+                    // Hitung harga total
+                    var totalHarga = hargaSatuan * jumlah;
+
+                    // Masukkan harga total ke dalam input harga
+                    hargaInput.val(totalHarga);
+                } else {
+                    hargaInput.val(""); // Kosongkan input harga jika harga satuan tidak ditemukan
+                }
+            } else {
+                hargaInput.val(""); // Kosongkan input harga jika jumlah tidak valid
+            }
+        }
+    });
 </script>
 @endpush

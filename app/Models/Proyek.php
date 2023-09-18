@@ -11,4 +11,13 @@ class Proyek extends Model
 
     protected $guarded = ['id'];
 
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class);
+    }
+    
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class);
+    }
 }

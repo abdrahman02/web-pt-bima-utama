@@ -122,7 +122,7 @@ class PembelianController extends Controller
         // Mengupdate stok barang
         $barang = Barang::find($item->barang_id);
         if ($barang) {
-            $stokBaru = $barang->stok + $perubahanJumlah;
+            $stokBaru = max(0, $barang->stok + $perubahanJumlah);
             $barang->update([
                 'stok' => $stokBaru,
                 'harga_beli' => $request->harga_beli, // Memastikan harga_beli barang diupdate
@@ -146,7 +146,7 @@ class PembelianController extends Controller
         $barang = Barang::find($pembelian->barang_id);
 
         if ($barang) {
-            $stokBaru = $barang->stok + $perubahanJumlah;
+            $stokBaru = max(0, $barang->stok + $perubahanJumlah);
             $barang->update([
                 'stok' => $stokBaru,
             ]);
