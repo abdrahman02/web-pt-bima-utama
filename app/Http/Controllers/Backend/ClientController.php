@@ -91,4 +91,16 @@ class ClientController extends Controller
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
+
+    public function cariPelanggan(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $pelanggans = Pelanggan::where('id', 'like', '%' . $keyword . '%')
+            ->orWhere('nama_pelanggan', 'like', '%' . $keyword . '%')
+            ->orWhere('no_telp', 'like', '%' . $keyword . '%')
+            ->orWhere('alamat', 'like', '%' . $keyword . '%')
+            ->paginate(10)->withQueryString();
+
+        return view('backend.client.index', compact('pelanggans'));
+    }
 }

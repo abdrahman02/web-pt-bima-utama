@@ -121,4 +121,22 @@ class PemakaianController extends Controller
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
+
+    public function cariPemakaian(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $pemakaians = Pemakaian::join('barangs', 'pemakaians.barang_id', '=', 'barangs.id')
+            ->where(function ($query) use ($keyword) {
+                $query->where('barangs.nama_barang', 'like', '%' . $keyword . '%');
+            })
+            ->orWhere('pemakaians.jenis_pemakaian', 'like', '%' . $keyword . '%')
+            ->orWhere('pemakaians.tgl_pemakaian', 'like', '%' . $keyword . '%')
+            ->orWhere('pemakaians.jumlah', 'like', '%' . $keyword . '%')
+            ->select('pemakaians.*')
+            ->paginate(10)
+            ->withQueryString();
+        $barangs = Barang::all();
+
+        return view('backend.pemakaian.index', compact('pemakaians', 'barangs'));
+    }
 }

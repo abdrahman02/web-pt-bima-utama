@@ -39,10 +39,16 @@ Route::middleware('auth')->prefix('input')->group(function () {
     ]);
     Route::get('/barang/cetak', [BarangController::class, 'cetak']);
     Route::get('/suplier/cetak', [SuplierController::class, 'cetak']);
+    Route::get('/client/cari', [ClientController::class, 'cariPelanggan'])->name('client.cari');
+    Route::get('/suplier/cari', [SuplierController::class, 'cariSuplier'])->name('suplier.cari');
+    Route::get('/barang/cari', [BarangController::class, 'cariBarang'])->name('barang.cari');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 Route::middleware('auth')->prefix('transaksi')->group(function () {
+    Route::get('/proyek/cari', [ProyekController::class, 'cariProyek'])->name('proyek.cari');
+    Route::get('/pemakaian/cari', [PemakaianController::class, 'cariPemakaian'])->name('pemakaian.cari');
+    Route::get('/pembelian/cari', [PembelianController::class, 'cariPembelian'])->name('pembelian.cari');
     Route::resource('/proyek', ProyekController::class);
     Route::resource('/pembelian', PembelianController::class)->only([
         'index', 'store', 'update', 'destroy'

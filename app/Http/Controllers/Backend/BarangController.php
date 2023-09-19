@@ -95,4 +95,17 @@ class BarangController extends Controller
         $barangs = Barang::all();
         return view('backend.templates.barang.index', compact('barangs'));
     }
+
+    public function cariBarang(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $barangs = Barang::where('id', 'like', '%' . $keyword . '%')
+            ->orWhere('nama_barang', 'like', '%' . $keyword . '%')
+            ->orWhere('stok', 'like', '%' . $keyword . '%')
+            ->orWhere('jenis', 'like', '%' . $keyword . '%')
+            ->orWhere('harga_jual', 'like', '%' . $keyword . '%')
+            ->paginate(10)->withQueryString();
+
+        return view('backend.barang.index', compact('barangs'));
+    }
 }
