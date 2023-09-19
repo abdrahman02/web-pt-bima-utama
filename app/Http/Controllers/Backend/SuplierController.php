@@ -98,4 +98,16 @@ class SuplierController extends Controller
         $supliers = Suplier::all();
         return view('backend.templates.suplier.index', compact('supliers'));
     }
+
+    public function cariSuplier(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $supliers = Suplier::where('id', 'like', '%' . $keyword . '%')
+            ->orWhere('nama_suplier', 'like', '%' . $keyword . '%')
+            ->orWhere('no_telp', 'like', '%' . $keyword . '%')
+            ->orWhere('alamat', 'like', '%' . $keyword . '%')
+            ->paginate(10)->withQueryString();
+
+        return view('backend.suplier.index', compact('supliers'));
+    }
 }

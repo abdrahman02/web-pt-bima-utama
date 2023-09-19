@@ -155,4 +155,26 @@ class PembelianController extends Controller
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
+
+    public function cariPembelian(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $pembelians = Pembelian::join('barangs', 'pembelians.barang_id', '=', 'barangs.id')
+            ->join('supliers', 'pembelians.suplier_id', '=', 'supliers.id')
+            ->where(function ($query) use ($keyword) {
+                $query->where('barangs.nama_barang', 'like', '%' . $keyword . '%')
+                    ->orWhere('supliers.nama_suplier', 'like', '%' . $keyword . '%');
+            })
+            ->orWhere('pembelians.tgl_pembelian', 'like', '%' . $keyword . '%')
+            ->orWhere('pembelians.jumlah', 'like', '%' . $keyword . '%')
+            ->orWhere('pembelians.harga', 'like', '%' . $keyword . '%')
+            ->orWhere('pembelians.jumlah_bayar', 'like', '%' . $keyword . '%')
+            ->select('pembelians.*')
+            ->paginate(10)
+            ->withQueryString();
+        $barangs = Barang::all();
+        $supliers = Suplier::all();
+
+        return view('backend.pembelian.index', compact('pembelians', 'barangs', 'supliers'));
+    }
 }

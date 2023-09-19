@@ -37,13 +37,15 @@
                 <div class="d-flex justify-content-between">
 
                     <div class="form-group col-6">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Masukkan kata kunci..."
-                                aria-label="Recipient's username">
-                            <div class="input-group-append">
-                                <button class="btn btn-sm btn-primary" type="button">Cari</button>
+                        <form action="{{ route('barang.cari') }}" method="get">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Masukkan kata kunci..."
+                                    name="keyword">
+                                <div class="input-group-append">
+                                    <button class="btn btn-sm btn-primary" type="submit">Cari</button>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
 
                     <div class="button d-flex gap-2">
