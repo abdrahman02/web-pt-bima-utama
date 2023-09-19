@@ -46,11 +46,19 @@
                         </div>
                     </div>
 
-                    <div class="button">
-                        <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
-                            data-bs-target="#modal-tbh-item">
-                            <i class="mdi mdi-plus-box"></i>
-                        </a>
+                    <div class="button d-flex gap-2">
+                        <div class="cetak">
+                            <a href="/input/barang/cetak" target="_blank" class="btn btn-sm btn-primary btn-icon-text">
+                                <span class="mdi mdi-printer me-1"></span>
+                                Cetak
+                            </a>
+                        </div>
+                        <div class="tambah">
+                            <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
+                                data-bs-target="#modal-tbh-item">
+                                <i class="mdi mdi-plus-box"></i>
+                            </a>
+                        </div>
                     </div>
 
                 </div>

@@ -89,4 +89,10 @@ class BarangController extends Controller
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
+
+    public function cetak()
+    {
+        $barangs = Barang::all();
+        return view('backend.templates.barang.index', compact('barangs'));
+    }
 }

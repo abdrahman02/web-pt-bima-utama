@@ -94,7 +94,6 @@ class PembelianController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'barang_id' => 'required',
             'suplier_id' => 'required',
             'no_fakt_pembelian' => 'required',
             'tgl_pembelian' => 'required',
@@ -107,7 +106,7 @@ class PembelianController extends Controller
         $item = Pembelian::findOrFail($id);
         // Simpan jumlah lama pembelian sebelum diperbarui
         $jumlahLama = $item->jumlah;
-        $item->barang_id = $request->barang_id;
+        $item->barang_id = $item->barang_id;
         $item->suplier_id = $request->suplier_id;
         $item->no_fakt_pembelian = $request->no_fakt_pembelian;
         $item->tgl_pembelian = $request->tgl_pembelian;

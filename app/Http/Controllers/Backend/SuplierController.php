@@ -92,4 +92,10 @@ class SuplierController extends Controller
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
+
+    public function cetak()
+    {
+        $supliers = Suplier::all();
+        return view('backend.templates.suplier.index', compact('supliers'));
+    }
 }

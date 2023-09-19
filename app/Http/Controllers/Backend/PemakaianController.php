@@ -77,7 +77,6 @@ class PemakaianController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'barang_id' => 'required',
             'jenis_pemakaian' => 'required',
             'tgl_pemakaian' => 'required',
             'jumlah' => 'required',
@@ -85,7 +84,7 @@ class PemakaianController extends Controller
 
         $item = Pemakaian::findOrFail($id);
         $jumlahLama = $item->jumlah;
-        $item->barang_id = $request->barang_id;
+        $item->barang_id = $item->barang_id;
         $item->jenis_pemakaian = $request->jenis_pemakaian;
         $item->tgl_pemakaian = $request->tgl_pemakaian;
         $item->jumlah = $request->jumlah;
