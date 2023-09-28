@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Http\Controllers\Controller;
 use App\Models\Pembelian;
 use Illuminate\Http\Request;
+use App\Models\PembelianDetail;
+use App\Http\Controllers\Controller;
 
 class LaporanPembelianController extends Controller
 {
@@ -20,10 +21,14 @@ class LaporanPembelianController extends Controller
 
     public function cetakHarian($tgl_pembelian)
     {
-        $pembelians = Pembelian::where('tgl_pembelian', $tgl_pembelian)->get();
-        $ttl_harga = $pembelians->sum('harga');
+        // Mengambil data pembelian berdasarkan tanggal yang dipilih
+        $pembelians = Pembelian::whereDate('tgl_pembelian', $tgl_pembelian)->get();
+
+        // Menghitung total harga pembelian
+        $ttl_harga = Pembelian::whereDate('tgl_pembelian', $tgl_pembelian)->sum('grand_total_harga');
+
+        // tambahkan judul
         $judul = 'Harian';
-        $tgl_pembelian = $tgl_pembelian;
         return view('backend.templates.pembelian.index', compact('pembelians', 'judul', 'tgl_pembelian', 'ttl_harga'));
     }
 
@@ -34,11 +39,15 @@ class LaporanPembelianController extends Controller
 
     public function cetakMingguan($tgl_pembelian_awal, $tgl_pembelian_akhir)
     {
+        // Mengambil data pembelian berdasarkan range tanggal yang dipilih
         $pembelians = Pembelian::whereBetween('tgl_pembelian', [$tgl_pembelian_awal, $tgl_pembelian_akhir])->get();
-        $ttl_harga = $pembelians->sum('harga');
+
+        // Menghitung total harga pembelian
+        $ttl_harga = Pembelian::whereBetween('tgl_pembelian', [$tgl_pembelian_awal, $tgl_pembelian_akhir])->sum('grand_total_harga');
+
+        // tambahkan judul
         $judul = 'Mingguan';
-        $tgl_pembelian_awal = $tgl_pembelian_awal;
-        $tgl_pembelian_akhir = $tgl_pembelian_akhir;
+
         return view('backend.templates.pembelian.index', compact('pembelians', 'judul', 'tgl_pembelian_awal', 'tgl_pembelian_akhir', 'ttl_harga'));
     }
 
@@ -49,24 +58,44 @@ class LaporanPembelianController extends Controller
 
     public function cetakBulanan($bln_pembelian)
     {
+        // buat variabel bulan dan tahun
         list($tahun, $bulan) = explode("-", $bln_pembelian);
+
+        // Mengambil data pembelian berdasarkan range tanggal yang dipilih
         $pembelians = Pembelian::whereYear('tgl_pembelian', $tahun)->whereMonth('tgl_pembelian', $bulan)->get();
-        $ttl_harga = $pembelians->sum('harga');
+
+        // Menghitung total harga pembelian
+        $ttl_harga = Pembelian::whereYear('tgl_pembelian', $tahun)->whereMonth('tgl_pembelian', $bulan)->sum('grand_total_harga');
+
+        // tambahkan judul
         $judul = 'Bulanan';
         return view('backend.templates.pembelian.index', compact('pembelians', 'judul', 'tahun', 'bulan', 'ttl_harga'));
     }
 
     public function tahunan()
     {
-        return view('backend.reports.pembelian.pertahun');
+        // Menggunakan model Pembelian untuk mengambil tahun pembelian unik
+        $tahun_pembelian = Pembelian::selectRaw('YEAR(tgl_pembelian) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->get();
+        return view('backend.reports.pembelian.pertahun', compact('tahun_pembelian'));
     }
 
     public function cetakTahunan($thn_pembelian)
     {
-        list($tahun, $bulan) = explode("-", $thn_pembelian);
-        $pembelians = Pembelian::whereYear('tgl_pembelian', $tahun)->get();
-        $ttl_harga = $pembelians->sum('harga');
+        // Mengambil data pembelian berdasarkan range tanggal yang dipilih
+        $pembelians = Pembelian::whereYear('tgl_pembelian', $thn_pembelian)->get();
+
+        // Menghitung total harga pembelian
+        $ttl_harga = Pembelian::whereYear('tgl_pembelian', $thn_pembelian)->sum('grand_total_harga');
+
+        // buat variable tahun
+        $tahun = $thn_pembelian;
+
+        // tambahkan judul
         $judul = 'Tahunan';
+
         return view('backend.templates.pembelian.index', compact('pembelians', 'judul', 'tahun', 'ttl_harga'));
     }
 }

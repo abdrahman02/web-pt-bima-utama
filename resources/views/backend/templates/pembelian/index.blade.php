@@ -29,27 +29,51 @@
                     <th class="text-center col-1 text-wrap">Nama Suplier</th>
                     <th class="text-center col-1 text-wrap">Nama Barang</th>
                     <th class="text-center col-1 text-wrap">Jumlah</th>
-                    <th class="text-center col-1 text-wrap">Harga</th>
+                    <th class="text-center col-1 text-wrap">Sub Total Harga</th>
                     <th class="text-center col-1 text-wrap">Status</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($pembelians as $key => $item)
-                <tr class="align-middle">
-                    <td class="text-center col-1 text-wrap">{{ $key + 1 }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->no_fakt_pembelian }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->tgl_pembelian }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->suplier->nama_suplier }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->barang->nama_barang }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->jumlah }}</td>
-                    <td class="text-center col-1 text-wrap">{{ $item->harga }}</td>
-                    <td class="text-center col-1 text-wrap text-wrap">{{ $item->status }}</td>
+                <tr>
+                    <td class="text-center col-1">{{ $key + 1 }}</td>
+                    <td class="text-center col-1">{{ $item->no_fakt_pembelian }}</td>
+                    <td class="text-center col-1">{{ $item->tgl_pembelian }}</td>
+                    <td class="text-center col-1">{{ $item->suplier->nama_suplier }}</td>
+                    <td class="text-center col-1">
+                        <ul>
+                            @foreach ($item->pembelian_detail as $detail)
+                            <li>
+                                {{ $detail->barang->nama_barang }}
+                            </li>
+                            @endforeach
+                        </ul>
+                    </td>
+                    <td class="text-center col-1">
+                        <ul>
+                            @foreach ($item->pembelian_detail as $detail)
+                            <li>
+                                {{ number_format($detail->jumlah) . ' ' . $detail->barang->jenis }}
+                            </li>
+                            @endforeach
+                        </ul>
+                    </td>
+                    <td class="text-center col-1">
+                        <ul>
+                            @foreach ($item->pembelian_detail as $detail)
+                            <li>
+                                {{ 'Rp. ' . number_format($detail->sub_total_harga) }}
+                            </li>
+                            @endforeach
+                        </ul>
+                    </td>
+                    <td class="text-center col-1">{{ $item->status }}</td>
                 </tr>
                 @endforeach
-                <tr class="align-middle">
-                    <td class="text-center fw-bold" colspan="6">TOTAL</td>
-                    <td class="text-center fw-bold">{{ $ttl_harga }}</td>
-                    <td class="text-center fw-bold"></td>
+                <tr>
+                    <td class="text-center fw-bold" colspan="6">GRAND TOTAL</td>
+                    <td class="text-center fw-bold">{{ 'Rp. ' . number_format($ttl_harga) }}</td>
+                    <td class="text-center fw-bold">&nbsp;</td>
                 </tr>
             </tbody>
             @else

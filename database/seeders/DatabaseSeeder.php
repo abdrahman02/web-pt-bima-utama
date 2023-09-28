@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Administrator',
             'username' => 'admin',
             'email' => 'admin@email.com',
+            'role' => 'admin',
             'password' => Hash::make('admin')
         ]);
         Pelanggan::create([

@@ -49,8 +49,7 @@
                     </div>
 
                     <div class="button">
-                        <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
-                            data-bs-target="#modal-tbh-item">
+                        <a class="btn btn-sm btn-primary btn-icon-text" href="{{ route('proyek.create') }}">
                             <i class="mdi mdi-plus-box"></i>
                         </a>
                     </div>
@@ -58,29 +57,57 @@
                 </div>
 
                 <table class="table table-hover">
-                    @if ($proyeks->isNotEmpty())
+                    @if ($proyek_details->isNotEmpty())
                     <thead>
                         <tr>
                             <th class="text-center">No</th>
+                            <th class="text-center">No Faktur</th>
                             <th class="text-center">Nama Barang</th>
                             <th class="text-center">Pelanggan</th>
                             <th class="text-center">Tanggal Proyek</th>
                             <th class="text-center">Jumlah</th>
-                            <th class="text-center">Harga</th>
-                            <th class="text-center">Jumlah Bayar</th>
+                            <th class="text-center">Harga Jual Per-item</th>
+                            <th class="text-center">Sub Total Harga</th>
+                            <th class="text-center">Grand Total Harga</th>
+                            <th class="text-center">Panjar</th>
+                            <th class="text-center">Sisa</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($proyeks as $key => $item)
+                        @foreach ($proyek_details as $key => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $proyeks->firstItem() + $key }}</td>
+                            <td class="text-center">{{ $proyek_details->firstItem() + $key }}</td>
+                            <td class="text-center">{{ $item->proyek->no_fakt_proyek }}</td>
                             <td class="text-center">{{ $item->barang->nama_barang }}</td>
-                            <td class="text-center">{{ $item->pelanggan->nama_pelanggan }}</td>
-                            <td class="text-center">{{ $item->tgl_proyek }}</td>
-                            <td class="text-center">{{ $item->jumlah }}</td>
-                            <td class="text-center">{{ $item->harga }}</td>
-                            <td class="text-center">{{ $item->jumlah_bayar }}</td>
+                            <td class="text-center">{{ $item->proyek->pelanggan->nama_pelanggan }}</td>
+                            <td class="text-center">{{ $item->proyek->tgl_proyek }}</td>
+                            <td class="text-center">{{ number_format($item->jumlah) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->barang->harga_jual) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->sub_total_harga) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->proyek->grand_total_harga) }}</td>
+                            <td>
+                                <div class="d-flex flex-column px-2 py-1">
+                                    <span class="text-center text-success">{{ 'Rp. ' .
+                                        number_format($item->proyek->panjar) }}</span>
+                                    <a href="{{ route('proyek.invoicePanjar', $item->proyeTk->id) }}" target="blank">
+                                        <p class="badge badge-success rounded-pill fw-light mt-1">kwitansi</p>
+                                    </a>
+                                </div>
+                            </td>
+                            @if ($item->proyek->grand_total_harga == $item->proyek->panjar + $item->proyek->sisa)
+                            <td>
+                                <div class="d-flex flex-column px-2 py-1">
+                                    <span class="text-center text-success">{{ 'Rp. ' .
+                                        number_format($item->proyek->sisa) }}</span>
+                                    <a href="{{ route('proyek.invoiceSisa', $item->proyek->id) }}" target="blank">
+                                        <p class="badge badge-success rounded-pill fw-light mt-1">kwitansi</p>
+                                    </a>
+                                </div>
+                            </td>
+                            @else
+                            <td class="text-center text-danger">belum pelunasan</td>
+                            @endif
                             <td class="d-flex justify-content-center">
                                 <a class="badge badge-warning link-warning" title="Edit" href="#" data-bs-toggle="modal"
                                     data-bs-target="#modal-ubh-item{{ $item->id }}">
@@ -89,7 +116,7 @@
                                 <a class="badge badge-danger link-danger ms-3" title="Hapus" href="" onclick="if(confirm('Apakah anda yakin?')) {
                                 event.preventDefault(); document.getElementById('delete-form').submit()};">
                                     <i class="mdi mdi-minus-box"></i>
-                                    <form action="{{ route('proyek.destroy', $item->id) }}" method="post"
+                                    <form action="{{ route('proyek.destroy', $item->proyek->id) }}" method="post"
                                         id="delete-form" class="d-none">
                                         @csrf
                                         @method('delete')
@@ -106,91 +133,9 @@
                     @endif
                 </table>
                 <div class="d-flex justify-content-center">
-                    {{ $proyeks->links() }}
+                    {{ $proyek_details->links() }}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-
-{{-- Modal Tambah Data --}}
-<div class="modal fade" id="modal-tbh-item" role="dialog" aria-hidden="true" tabindex="-1">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <form action="{{ route('proyek.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="p-3">
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="barang_id" class="d-flex">Barang</label>
-                                <select class="form-control" id="barang_id" name="barang_id" style="width: 100%"
-                                    required>
-                                    <option value="" selected>-- PILIH --</option>
-                                    @foreach ($barangs as $barang)
-                                    <option value="{{ $barang->id }}" @if (old('barang_id')===$barang->id)
-                                        selected @endif>{{
-                                        $barang->nama_barang }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="pelanggan_id" class="d-flex">Pelanggan</label>
-                                <select class="form-control" id="pelanggan_id" name="pelanggan_id" style="width: 100%"
-                                    required>
-                                    <option value="" selected>-- PILIH --</option>
-                                    @foreach ($pelanggans as $pelanggan)
-                                    <option value="{{ $pelanggan->id }}" @if (old('pelanggan_id')===$pelanggan->id)
-                                        selected @endif>{{ $pelanggan->nama_pelanggan }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="no_fakt_proyek">No Faktur</label>
-                                <input type="text" class="form-control" id="no_fakt_proyek" name="no_fakt_proyek"
-                                    placeholder="No Faktur" required value="{{ old('no_fakt_proyek') }}">
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="tgl_proyek">Tanggal Proyek</label>
-                                <input type="date" class="form-control" id="tgl_proyek" name="tgl_proyek"
-                                    placeholder="Tanggal proyek" required value="{{ old('tgl_proyek') }}">
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="jumlah">Jumlah</label>
-                                <input type="text" class="form-control" id="jumlah" name="jumlah" placeholder="Jumlah"
-                                    required value="{{ old('jumlah') }}">
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="status">Status</label>
-                                <input type="text" class="form-control" id="status" name="status" placeholder="Status"
-                                    required value="{{ old('status') }}">
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="harga">Harga</label>
-                                <input type="text" class="form-control" id="harga" name="harga" placeholder="Harga"
-                                    required value="{{ old('harga') }}" readonly>
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="jumlah_bayar">Jumlah Bayar</label>
-                                <input type="text" class="form-control" id="jumlah_bayar" name="jumlah_bayar"
-                                    placeholder="Jumlah bayar" required value="{{ old('jumlah_bayar') }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -200,7 +145,7 @@
 
 
 {{-- Modal Ubah Data --}}
-@foreach ($proyeks as $item)
+@foreach ($proyek_details as $item)
 <div class="modal fade" id="modal-ubh-item{{ $item->id }}" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -210,40 +155,16 @@
                 <div class="modal-body">
                     <div class="p-3">
                         <div class="col-lg-12 d-flex gap-2">
+
                             <div class="form-group col-lg-6">
-                                <label for="barang_id{{ $item->id }}" class="d-flex">Barang</label>
-                                <select class="form-control" id="barang_id{{ $item->id }}" name="barang_id"
-                                    style="width: 100%" disabled>
-                                    @if (empty($item->barang->nama_barang))
-                                    <option value="" selected>-- PILIH --</option>
-                                    @endif
-                                    @foreach ($barangs as $barang)
-                                    <option value="{{ $barang->id }}" @if(old('barang_id', $item->barang_id) ===
-                                        $barang->id)
-                                        selected
-                                        @endif>
-                                        {{ $barang->nama_barang }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <label for="barang_id" class="d-flex">Barang</label>
+                                <input type="text" id="barang_id" class="form-control" disabled
+                                    value="{{ old('barang_id', $item->barang->nama_barang) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="pelanggan_id" class="d-flex">Pelanggan</label>
-                                <select class="form-control" id="pelanggan_id" name="pelanggan_id" style="width: 100%"
-                                    required>
-                                    @if (empty($item->pelanggan->nama_pelanggan))
-                                    <option value="" selected>-- PILIH --</option>
-                                    @endif
-                                    @foreach ($pelanggans as $pelanggan)
-                                    <option value="{{ $pelanggan->id }}" @if(old('pelanggan_id', $item->pelanggan_id)
-                                        ===
-                                        $pelanggan->id)
-                                        selected
-                                        @endif>
-                                        {{ $pelanggan->nama_pelanggan }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" id="pelanggan_id" class="form-control" disabled
+                                    value="{{ old('pelanggan_id', $item->proyek->pelanggan->nama_pelanggan) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
@@ -251,13 +172,13 @@
                                 <label for="no_fakt_proyek">No Faktur</label>
                                 <input type="text" class="form-control" id="no_fakt_proyek" name="no_fakt_proyek"
                                     placeholder="No Faktur" required
-                                    value="{{ old('no_fakt_proyek', $item->no_fakt_proyek) }}">
+                                    value="{{ old('no_fakt_proyek', $item->proyek->no_fakt_proyek) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="tgl_proyek">Tanggal Proyek</label>
                                 <input type="date" class="form-control" id="tgl_proyek" name="tgl_proyek"
                                     placeholder="Tanggal proyek" required
-                                    value="{{ old('tgl_proyek', $item->tgl_proyek) }}">
+                                    value="{{ old('tgl_proyek', $item->proyek->tgl_proyek) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
@@ -269,20 +190,33 @@
                             <div class="form-group col-lg-6">
                                 <label for="status">Status</label>
                                 <input type="text" class="form-control" id="status" name="status" placeholder="Status"
-                                    required value="{{ old('status', $item->status) }}">
+                                    required value="{{ old('status', $item->proyek->status) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="harga{{ $item->id }}">Harga</label>
-                                <input type="text" class="form-control" id="harga{{ $item->id }}" name="harga"
-                                    placeholder="Harga" required readonly value="{{ old('harga', $item->harga) }}">
+                                <label for="harga_jual{{ $item->id }}">Harga Jual Per-item</label>
+                                <input type="text" class="form-control" id="harga_jual{{ $item->id }}" name="harga_jual"
+                                    placeholder="Harga per-item" required disabled
+                                    value="{{ old('harga_jual', $item->barang->harga_jual) }}">
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="jumlah_bayar">Jumlah Bayar</label>
-                                <input type="text" class="form-control" id="jumlah_bayar" name="jumlah_bayar"
-                                    placeholder="Jumlah bayar" required
-                                    value="{{ old('jumlah_bayar', $item->jumlah_bayar) }}">
+                                <label for="sub_total_harga{{ $item->id }}">Sub Total Harga</label>
+                                <input type="text" class="form-control" id="sub_total_harga{{ $item->id }}"
+                                    name="sub_total_harga" placeholder="Total Pembayaran" required readonly
+                                    value="{{ old('sub_total_harga', $item->sub_total_harga) }}">
+                            </div>
+                        </div>
+                        <div class="col-lg-12 d-flex gap-2">
+                            <div class="form-group col-lg-6">
+                                <label for="panjar">Panjar</label>
+                                <input type="text" class="form-control" id="panjar" name="panjar" placeholder="Panjar"
+                                    required value="{{ old('panjar', $item->proyek->panjar) }}">
+                            </div>
+                            <div class="form-group col-lg-6">
+                                <label for="sisa">Bayar Sisa</label>
+                                <input type="text" class="form-control" id="sisa" name="sisa" placeholder="Sisa"
+                                    required value="{{ old('sisa', $item->proyek->sisa) }}">
                             </div>
                         </div>
                     </div>
@@ -298,105 +232,29 @@
 @endforeach
 @endsection
 
+
 @push('custom-js')
-<script>
-    // In your Javascript (external .js resource or <script> tag)
-$(document).ready(function() {
-    $('#pelanggan_id').select2({
-        dropdownParent: $('#modal-tbh-item'),
-        placeholder: "Pilih pelanggan",
-    });
-    $('#barang_id').select2({
-        dropdownParent: $('#modal-tbh-item'),
-        placeholder: "Pilih barang",
-    });
-});
-</script>
-
-<script>
-    var barangs = @json($barangs);
-</script>
-
+{{-- Ubah data --}}
+@foreach ($proyek_details as $item)
 <script>
     $(document).ready(function() {
         // Dapatkan referensi ke elemen yang dibutuhkan
-        var barangSelect = $("#barang_id");
-        var jumlahInput = $("#jumlah");
-        var hargaInput = $("#harga");
+        var jumlahInput = $("#jumlah{{ $item->id }}");
+        var hargaPerItemInput = $("#harga_jual{{ $item->id }}");
+        var totalHargaInput = $("#sub_total_harga{{ $item->id }}");
 
-        // Tambahkan event listener ke elemen barang_id dan jumlah
-        barangSelect.change(updateHarga);
-        jumlahInput.keyup(updateHarga);
+        // Tambahkan event listener ke elemen jumlah dan harga_jual
+        jumlahInput.on('input', updateTotalHarga);
+        hargaPerItemInput.on('input', updateTotalHarga);
 
-        function updateHarga() {
-            var selectedBarangId = barangSelect.val();
-            var jumlah = parseInt(jumlahInput.val());
+        // Fungsi untuk menghitung total harga
+        function updateTotalHarga() {
+            var jumlah = parseFloat(jumlahInput.val()) || 0;
+            var hargaPerItem = parseFloat(hargaPerItemInput.val()) || 0;
+            var totalHarga = jumlah * hargaPerItem;
             
-            if (!isNaN(jumlah)) {
-                // Temukan harga satuan berdasarkan ID barang dalam data yang sudah ada
-                var hargaSatuan = null;
-                $.each(barangs, function(index, barang) {
-                    if (barang.id == selectedBarangId) {
-                        hargaSatuan = barang.harga_jual;
-                        return false; // Keluar dari loop
-                    }
-                });
-
-                if (hargaSatuan !== null) {
-                    // Hitung harga total
-                    var totalHarga = hargaSatuan * jumlah;
-
-                    // Masukkan harga total ke dalam input harga
-                    hargaInput.val(totalHarga);
-                } else {
-                    hargaInput.val(""); // Kosongkan input harga jika harga satuan tidak ditemukan
-                }
-            } else {
-                hargaInput.val(""); // Kosongkan input harga jika jumlah tidak valid
-            }
-        }
-    });
-</script>
-
-
-@foreach ($proyeks as $item)
-<script>
-    $(document).ready(function() {
-        // Dapatkan referensi ke elemen yang dibutuhkan dalam modal update data ini
-        var barangSelect{{ $item->id }} = $("#barang_id{{ $item->id }}");
-        var jumlahInput{{ $item->id }} = $("#jumlah{{ $item->id }}");
-        var hargaInput{{ $item->id }} = $("#harga{{ $item->id }}");
-
-        // Tambahkan event listener ke elemen barang_id dan jumlah dalam modal ini
-        barangSelect{{ $item->id }}.change(updateHarga{{ $item->id }});
-        jumlahInput{{ $item->id }}.keyup(updateHarga{{ $item->id }});
-
-        function updateHarga{{ $item->id }}() {
-            var selectedBarangId = barangSelect{{ $item->id }}.val();
-            var jumlah = parseInt(jumlahInput{{ $item->id }}.val());
-
-            if (!isNaN(jumlah)) {
-                // Temukan harga satuan berdasarkan ID barang dalam data yang sudah ada
-                var hargaSatuan = null;
-                $.each(barangs, function(index, barang) {
-                    if (barang.id == selectedBarangId) {
-                        hargaSatuan = barang.harga_jual;
-                        return false; // Keluar dari loop
-                    }
-                });
-
-                if (hargaSatuan !== null) {
-                    // Hitung harga total
-                    var totalHarga = hargaSatuan * jumlah;
-
-                    // Masukkan harga total ke dalam input harga
-                    hargaInput{{ $item->id }}.val(totalHarga);
-                } else {
-                    hargaInput{{ $item->id }}.val(""); // Kosongkan input harga jika harga satuan tidak ditemukan
-                }
-            } else {
-                hargaInput{{ $item->id }}.val(""); // Kosongkan input harga jika jumlah tidak valid
-            }
+            // Mengisi nilai sub_total_harga dengan hasil perhitungan
+            totalHargaInput.val(totalHarga);
         }
     });
 </script>

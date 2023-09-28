@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('proyeks', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('barang_id');
-            $table->foreign('barang_id')->references('id')->on('barangs')->onDelete('cascade');
             $table->unsignedBigInteger('pelanggan_id');
             $table->foreign('pelanggan_id')->references('id')->on('pelanggans')->onDelete('cascade');
             $table->string('no_fakt_proyek');
             $table->string('tgl_proyek');
-            $table->string('jumlah');
-            $table->string('harga');
-            $table->string('jumlah_bayar');
+            $table->string('grand_total_harga');
+            $table->string('panjar');
+            $table->string('sisa')->default('0');
             $table->string('status');
             $table->timestamps();
         });

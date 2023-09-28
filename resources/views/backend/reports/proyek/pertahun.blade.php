@@ -6,7 +6,7 @@
         <div class="card-body">
             <h4 class="card-title">Tabel Cetak Proyek Tahunan</h4>
             <p class="card-description text-danger">
-                Pilih bulan apa saja pada tahun yang diinginkan untuk dicetak!
+                Pilih tahun untuk mencetak!
             </p>
 
             <div class="form-group">
@@ -16,7 +16,12 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text mdi mdi-calendar"></span>
                         </div>
-                        <input type="month" class="form-control" id="thn_proyek" name="thn_proyek">
+                        <select class="form-control" id="thn_proyek" name="thn_proyek">
+                            <option value="">Pilih Tahun</option>
+                            @foreach($tahun_proyek as $tahun)
+                            <option value="{{ $tahun->year }}">{{ $tahun->year }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 

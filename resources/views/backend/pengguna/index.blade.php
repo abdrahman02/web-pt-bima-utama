@@ -3,9 +3,9 @@
 <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Tabel Barang</h4>
+            <h4 class="card-title">Tabel Akun Pengguna</h4>
             <p class="card-description">
-                Daftar Barang
+                Daftar Akun Pengguna
             </p>
 
             {{-- Alert Success --}}
@@ -37,7 +37,7 @@
                 <div class="d-flex justify-content-between">
 
                     <div class="form-group col-6">
-                        <form action="{{ route('barang.cari') }}" method="get">
+                        <form action="{{ route('pengguna.cari') }}" method="get">
                             <div class="input-group">
                                 <input type="text" class="form-control" placeholder="Masukkan kata kunci..."
                                     name="keyword">
@@ -48,53 +48,35 @@
                         </form>
                     </div>
 
-                    <div class="button d-flex gap-2">
-                        <div class="cetak">
-                            <a href="/input/barang/cetak" target="_blank" class="btn btn-sm btn-primary btn-icon-text">
-                                <span class="mdi mdi-printer me-1"></span>
-                                Cetak
-                            </a>
-                        </div>
-                        <div class="tambah">
-                            <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
-                                data-bs-target="#modal-tbh-item">
-                                <i class="mdi mdi-plus-box"></i>
-                            </a>
-                        </div>
+                    <div class="button">
+                        <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
+                            data-bs-target="#modal-tbh-item">
+                            <i class="mdi mdi-plus-box"></i>
+                        </a>
                     </div>
 
                 </div>
 
                 <table class="table table-hover">
-                    @if ($barangs->isNotEmpty())
+                    @if ($penggunas->isNotEmpty())
                     <thead>
                         <tr>
                             <th class="text-center">No</th>
-                            <th class="text-center">Id Barang</th>
-                            <th class="text-center">Nama Barang</th>
-                            <th class="text-center">Stok</th>
-                            <th class="text-center">Jenis</th>
-                            <th class="text-center">Harga Beli/Item</th>
-                            <th class="text-center">Harga Jual/Item</th>
+                            <th class="text-center">Id Pengguna</th>
+                            <th class="text-center">Nama</th>
+                            <th class="text-center">Username</th>
+                            <th class="text-center">Email</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($barangs as $key => $item)
+                        @foreach ($penggunas as $key => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $barangs->firstItem() + $key }}</td>
+                            <td class="text-center">{{ $penggunas->firstItem() + $key }}</td>
                             <td class="text-center">{{ $item->id }}</td>
-                            <td class="text-center">{{ $item->nama_barang }}</td>
-                            <td class="text-center">{{ $item->stok }}</td>
-                            <td class="text-center">{{ $item->jenis }}</td>
-                            <td class="text-center">{{ 'Rp. ' . number_format($item->harga_beli_peritem) . '/' .
-                                $item->jenis }}</td>
-                            @if (empty($item->harga_jual))
-                            <td class="text-center text-warning">Belum diatur</td>
-                            @else
-                            <td class="text-center">{{ 'Rp. ' . number_format($item->harga_jual) . '/' . $item->jenis }}
-                            </td>
-                            @endif
+                            <td class="text-center">{{ $item->name }}</td>
+                            <td class="text-center">{{ $item->username }}</td>
+                            <td class="text-center">{{ $item->email }}</td>
                             <td class="d-flex justify-content-center">
                                 <a class="badge badge-warning link-warning" title="Edit" href="#" data-bs-toggle="modal"
                                     data-bs-target="#modal-ubh-item{{ $item->id }}">
@@ -103,7 +85,7 @@
                                 <a class="badge badge-danger link-danger ms-3" title="Hapus" href="" onclick="if(confirm('Apakah anda yakin?')) {
                                 event.preventDefault(); document.getElementById('delete-form').submit()};">
                                     <i class="mdi mdi-minus-box"></i>
-                                    <form action="{{ route('barang.destroy', $item->id) }}" method="post"
+                                    <form action="{{ route('pengguna.destroy', $item->id) }}" method="post"
                                         id="delete-form" class="d-none">
                                         @csrf
                                         @method('delete')
@@ -120,7 +102,7 @@
                     @endif
                 </table>
                 <div class="d-flex justify-content-center">
-                    {{ $barangs->links() }}
+                    {{ $penggunas->links() }}
                 </div>
             </div>
         </div>
@@ -133,19 +115,29 @@
 <div class="modal fade" id="modal-tbh-item" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('barang.store') }}" method="POST">
+            <form action="{{ route('pengguna.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="p-3">
                         <div class="form-group">
-                            <label for="nama_barang">Nama Barang</label>
-                            <input type="text" class="form-control" id="nama_barang" name="nama_barang"
-                                placeholder="Nama barang" autofocus required value="{{ old('nama_barang') }}">
+                            <label for="name">Nama</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Nama" autofocus
+                                required value="{{ old('name') }}">
                         </div>
                         <div class="form-group">
-                            <label for="jenis">Jenis Satuan</label>
-                            <input type="text" class="form-control" id="jenis" name="jenis" placeholder="Jenis" required
-                                value="{{ old('jenis') }}">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                                required value="{{ old('username') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="text" class="form-control" id="email" name="email" placeholder="Email" required
+                                value="{{ old('email') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Password" required value="{{ old('password') }}">
                         </div>
                     </div>
                 </div>
@@ -163,30 +155,34 @@
 
 
 {{-- Modal Ubah Data --}}
-@foreach ($barangs as $item)
+@foreach ($penggunas as $item)
 <div class="modal fade" id="modal-ubh-item{{ $item->id }}" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="{{ route('barang.update', $item->id) }}" method="POST">
+            <form action="{{ route('pengguna.update', $item->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
                     <div class="p-3">
                         <div class="form-group">
-                            <label for="nama_barang">Nama Barang</label>
-                            <input type="text" class="form-control" id="nama_barang" name="nama_barang"
-                                placeholder="Nama barang" autofocus required
-                                value="{{ old('nama_barang', $item->nama_barang) }}">
+                            <label for="name">Nama</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Nama" autofocus
+                                required value="{{ old('name', $item->name) }}">
                         </div>
                         <div class="form-group">
-                            <label for="jenis">Jenis Satuan</label>
-                            <input type="text" class="form-control" id="jenis" name="jenis" placeholder="Jenis"
-                                value="{{ old('jenis', $item->jenis) }}" required>
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                                value="{{ old('username', $item->username) }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="harga_jual">Harga Jual/Item</label>
-                            <input type="text" class="form-control" id="harga_jual" name="harga_jual"
-                                placeholder="Harga jual" value="{{ old('harga_jual', $item->harga_jual) }}" required>
+                            <label for="email">Email</label>
+                            <input type="text" class="form-control" id="email" name="email" placeholder="Email"
+                                value="{{ old('email', $item->email) }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Password" required value="{{ old('password', $item->password) }}">
                         </div>
                     </div>
                 </div>

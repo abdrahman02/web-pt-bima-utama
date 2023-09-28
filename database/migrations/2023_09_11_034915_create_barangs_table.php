@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nama_barang');
             $table->string('jenis');
-            $table->string('harga_beli')->nullable();
+            $table->string('harga_beli_peritem')->nullable();
+            $table->string('total_harga_beli')->nullable();
             $table->string('harga_jual')->nullable();
             $table->string('stok')->default('0');
             $table->timestamps();

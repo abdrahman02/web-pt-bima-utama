@@ -49,8 +49,7 @@
                     </div>
 
                     <div class="button">
-                        <a class="btn btn-sm btn-primary btn-icon-text" href="#" data-bs-toggle="modal"
-                            data-bs-target="#modal-tbh-item">
+                        <a class="btn btn-sm btn-primary btn-icon-text" href="{{ route('pembelian.create') }}">
                             <i class="mdi mdi-plus-box"></i>
                         </a>
                     </div>
@@ -58,29 +57,38 @@
                 </div>
 
                 <table class="table table-hover">
-                    @if ($pembelians->isNotEmpty())
+                    @if ($pembelian_details->isNotEmpty())
                     <thead>
                         <tr>
                             <th class="text-center">No</th>
-                            <th class="text-center">Nama Barang</th>
                             <th class="text-center">Suplier</th>
+                            <th class="text-center">Nama Barang</th>
                             <th class="text-center">Tanggal Pembelian</th>
                             <th class="text-center">Jumlah</th>
-                            <th class="text-center">Harga</th>
+                            <th class="text-center">Harga Per-item</th>
+                            <th class="text-center">Sub Total Harga Beli</th>
+                            <th class="text-center">Grand Total Harga Beli</th>
                             <th class="text-center">Jumlah Bayar</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($pembelians as $key => $item)
+                        @foreach ($pembelian_details as $key => $item)
                         <tr class="align-middle">
-                            <td class="text-center">{{ $pembelians->firstItem() + $key }}</td>
-                            <td class="text-center">{{ $item->barang->nama_barang }}</td>
-                            <td class="text-center">{{ $item->suplier->nama_suplier }}</td>
-                            <td class="text-center">{{ $item->tgl_pembelian }}</td>
-                            <td class="text-center">{{ $item->jumlah }}</td>
-                            <td class="text-center">{{ $item->harga }}</td>
-                            <td class="text-center">{{ $item->jumlah_bayar }}</td>
+                            <td class="text-center">{{ $pembelian_details->firstItem() + $key }}</td>
+                            <td class="text-center">
+                                {{ $item->pembelian->suplier->nama_suplier }}
+                            </td>
+                            <td class="text-center">
+                                {{ $item->barang->nama_barang }}
+                            </td>
+                            <td class="text-center">{{ $item->pembelian->tgl_pembelian }}</td>
+                            <td class="text-center">{{ number_format($item->jumlah) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->barang->harga_beli_peritem) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->sub_total_harga) }}</td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->pembelian->grand_total_harga) }}
+                            </td>
+                            <td class="text-center">{{ 'Rp. ' . number_format($item->pembelian->jumlah_bayar) }}</td>
                             <td class="d-flex justify-content-center">
                                 <a class="badge badge-warning link-warning" title="Edit" href="#" data-bs-toggle="modal"
                                     data-bs-target="#modal-ubh-item{{ $item->id }}">
@@ -106,90 +114,9 @@
                     @endif
                 </table>
                 <div class="d-flex justify-content-center">
-                    {{ $pembelians->links() }}
+                    {{ $pembelian_details->links() }}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-
-{{-- Modal Tambah Data --}}
-<div class="modal fade" id="modal-tbh-item" role="dialog" aria-hidden="true" tabindex="-1">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <form action="{{ route('pembelian.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="p-3">
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="barang_id" class="d-flex">Barang</label>
-                                <select class="form-control" id="barang_id" name="barang_id" style="width: 100%"
-                                    required>
-                                    <option value="" selected>-- PILIH --</option>
-                                    @foreach ($barangs as $barang)
-                                    <option value="{{ $barang->id }}" @if (old('barang_id')===$barang->id)
-                                        selected @endif>{{ $barang->nama_barang }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="suplier_id" class="d-flex">Suplier</label>
-                                <select class="form-control" id="suplier_id" name="suplier_id" style="width: 100%"
-                                    required>
-                                    <option value="" selected>-- PILIH --</option>
-                                    @foreach ($supliers as $suplier)
-                                    <option value="{{ $suplier->id }}" @if (old('suplier_id')===$suplier->id)
-                                        selected @endif>{{ $suplier->nama_suplier }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="no_fakt_pembelian">No Faktur</label>
-                                <input type="text" class="form-control" id="no_fakt_pembelian" name="no_fakt_pembelian"
-                                    placeholder="No Faktur" required value="{{ old('no_fakt_pembelian') }}">
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="tgl_pembelian">Tanggal Pembelian</label>
-                                <input type="date" class="form-control" id="tgl_pembelian" name="tgl_pembelian"
-                                    placeholder="Tanggal pembelian" required value="{{ old('tgl_pembelian') }}">
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="jumlah">Jumlah</label>
-                                <input type="text" class="form-control" id="jumlah" name="jumlah" placeholder="Jumlah"
-                                    required value="{{ old('jumlah') }}">
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="status">Status</label>
-                                <input type="text" class="form-control" id="status" name="status" placeholder="Status"
-                                    required value="{{ old('status') }}">
-                            </div>
-                        </div>
-                        <div class="col-lg-12 d-flex gap-2">
-                            <div class="form-group col-lg-6">
-                                <label for="harga">Harga</label>
-                                <input type="text" class="form-control" id="harga" name="harga" placeholder="Harga"
-                                    required value="{{ old('harga') }}">
-                            </div>
-                            <div class="form-group col-lg-6">
-                                <label for="jumlah_bayar">Jumlah Bayar</label>
-                                <input type="text" class="form-control" id="jumlah_bayar" name="jumlah_bayar"
-                                    placeholder="Jumlah bayar" required value="{{ old('jumlah_bayar') }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -199,7 +126,7 @@
 
 
 {{-- Modal Ubah Data --}}
-@foreach ($pembelians as $item)
+@foreach ($pembelian_details as $item)
 <div class="modal fade" id="modal-ubh-item{{ $item->id }}" role="dialog" aria-hidden="true" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -211,37 +138,13 @@
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
                                 <label for="barang_id" class="d-flex">Barang</label>
-                                <select class="form-control" id="barang_id" name="barang_id" style="width: 100%"
-                                    required disabled>
-                                    @if (empty($item->barang->nama_barang))
-                                    <option value="" selected>-- PILIH --</option>
-                                    @endif
-                                    @foreach ($barangs as $barang)
-                                    <option value="{{ $barang->id }}" @if(old('barang_id', $item->barang_id) ===
-                                        $barang->id)
-                                        selected
-                                        @endif>
-                                        {{ $barang->nama_barang }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" id="barang_id" class="form-control" disabled
+                                    value="{{ old('barang_id', $item->barang->nama_barang) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="suplier_id" class="d-flex">Suplier</label>
-                                <select class="form-control" id="suplier_id" name="suplier_id" style="width: 100%"
-                                    required>
-                                    @if (empty($item->suplier->nama_suplier))
-                                    <option value="" selected>-- PILIH --</option>
-                                    @endif
-                                    @foreach ($supliers as $suplier)
-                                    <option value="{{ $suplier->id }}" @if(old('suplier_id', $item->suplier_id) ===
-                                        $suplier->id)
-                                        selected
-                                        @endif>
-                                        {{ $suplier->nama_suplier }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" id="suplier_id" class="form-control" disabled
+                                    value="{{ old('suplier_id', $item->pembelian->suplier->nama_suplier) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
@@ -249,39 +152,47 @@
                                 <label for="no_fakt_pembelian">No Faktur</label>
                                 <input type="text" class="form-control" id="no_fakt_pembelian" name="no_fakt_pembelian"
                                     placeholder="No Faktur" required
-                                    value="{{ old('no_fakt_pembelian', $item->no_fakt_pembelian) }}">
+                                    value="{{ old('no_fakt_pembelian', $item->pembelian->no_fakt_pembelian) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="tgl_pembelian">Tanggal Pembelian</label>
                                 <input type="date" class="form-control" id="tgl_pembelian" name="tgl_pembelian"
                                     placeholder="Tanggal pembelian" required
-                                    value="{{ old('tgl_pembelian', $item->tgl_pembelian) }}">
+                                    value="{{ old('tgl_pembelian', $item->pembelian->tgl_pembelian) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="jumlah">Jumlah</label>
-                                <input type="text" class="form-control" id="jumlah" name="jumlah" placeholder="Jumlah"
-                                    required value="{{ old('jumlah', $item->jumlah) }}">
+                                <label for="jumlah{{ $item->id }}">Jumlah</label>
+                                <input type="text" class="form-control" id="jumlah{{ $item->id }}" name="jumlah"
+                                    placeholder="Jumlah" required value="{{ old('jumlah', $item->jumlah) }}">
                             </div>
                             <div class="form-group col-lg-6">
                                 <label for="status">Status</label>
                                 <input type="text" class="form-control" id="status" name="status" placeholder="Status"
-                                    required value="{{ old('status', $item->status) }}">
+                                    required value="{{ old('status', $item->pembelian->status) }}">
                             </div>
                         </div>
                         <div class="col-lg-12 d-flex gap-2">
                             <div class="form-group col-lg-6">
-                                <label for="harga">Harga</label>
-                                <input type="text" class="form-control" id="harga" name="harga" placeholder="Harga"
-                                    required value="{{ old('harga', $item->harga) }}">
+                                <label for="harga_peritem{{ $item->id }}">Harga Per-item</label>
+                                <input type="text" class="form-control" id="harga_peritem{{ $item->id }}"
+                                    name="harga_peritem" placeholder="Harga per-item" required
+                                    value="{{ old('harga_peritem', $item->barang->harga_beli_peritem) }}">
                             </div>
                             <div class="form-group col-lg-6">
-                                <label for="jumlah_bayar">Jumlah Bayar</label>
-                                <input type="text" class="form-control" id="jumlah_bayar" name="jumlah_bayar"
-                                    placeholder="Jumlah bayar" required
-                                    value="{{ old('jumlah_bayar', $item->jumlah_bayar) }}">
+                                <label for="sub_total_harga{{ $item->id }}">Sub Total Harga Pembelian</label>
+                                <input type="text" class="form-control" id="sub_total_harga{{ $item->id }}"
+                                    name="sub_total_harga" placeholder="Total harga" required readonly
+                                    value="{{ old('sub_total_harga', $item->sub_total_harga) }}">
                             </div>
+
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label for="jumlah_bayar">Jumlah Bayar</label>
+                            <input type="text" class="form-control" id="jumlah_bayar" name="jumlah_bayar"
+                                placeholder="Jumlah bayar" required
+                                value="{{ old('jumlah_bayar', $item->pembelian->jumlah_bayar) }}">
                         </div>
                     </div>
                 </div>
@@ -297,17 +208,29 @@
 @endsection
 
 @push('custom-js')
+{{-- Ubah data --}}
+@foreach ($pembelian_details as $item)
 <script>
-    // In your Javascript (external .js resource or <script> tag)
-$(document).ready(function() {
-    $('#suplier_id').select2({
-        dropdownParent: $('#modal-tbh-item'),
-        placeholder: "Pilih suplier",
+    $(document).ready(function() {
+        // Dapatkan referensi ke elemen yang dibutuhkan
+        var jumlahInput = $("#jumlah{{ $item->id }}");
+        var hargaPerItemInput = $("#harga_peritem{{ $item->id }}");
+        var totalHargaInput = $("#sub_total_harga{{ $item->id }}");
+
+        // Tambahkan event listener ke elemen jumlah dan harga_peritem
+        jumlahInput.on('input', updateTotalHarga);
+        hargaPerItemInput.on('input', updateTotalHarga);
+
+        // Fungsi untuk menghitung total harga
+        function updateTotalHarga() {
+            var jumlah = parseFloat(jumlahInput.val()) || 0;
+            var hargaPerItem = parseFloat(hargaPerItemInput.val()) || 0;
+            var totalHarga = jumlah * hargaPerItem;
+            
+            // Mengisi nilai sub_total_harga dengan hasil perhitungan
+            totalHargaInput.val(totalHarga);
+        }
     });
-    $('#barang_id').select2({
-        dropdownParent: $('#modal-tbh-item'),
-        placeholder: "Pilih barang",
-    });
-});
 </script>
+@endforeach
 @endpush

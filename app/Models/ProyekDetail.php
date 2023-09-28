@@ -5,19 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pembelian extends Model
+class ProyekDetail extends Model
 {
     use HasFactory;
 
     protected $guarded = ['id'];
 
-    public function pembelian_detail()
+    public function barang()
     {
-        return $this->hasMany(PembelianDetail::class);
+        return $this->belongsTo(Barang::class);
     }
 
-    public function suplier()
+    public function proyek()
     {
-        return $this->belongsTo(Suplier::class);
+        return $this->belongsTo(Proyek::class);
     }
 }
