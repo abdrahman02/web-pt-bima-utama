@@ -21,15 +21,15 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            // return 'Berhasil';
             $request->session()->regenerate();
 
             return redirect()->intended('/input/client');
-            // if (auth()->user()->role == 'admin') {
-            //     return redirect()->intended('/dashboard/berita');
-            // } elseif (auth()->user()->role == 'pelanggan') {
-            //     return redirect()->intended('/');
-            // }
+
+            if (auth()->user()->role == 'admin') {
+                return redirect()->intended('/input/client');
+            } elseif (auth()->user()->role == 'super-admin') {
+                return redirect()->intended('/laporan/buy');
+            }
         } else {
             return back()->with('error', 'Username atau password salah');
         }

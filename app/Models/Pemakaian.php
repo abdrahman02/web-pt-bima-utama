@@ -11,8 +11,7 @@ class Pemakaian extends Model
 
     protected $guarded = ['id'];
 
-    public function barang()
-    {
-        return $this->belongsTo(Barang::class);
+    public function pemakaian_detail() {
+        return $this->hasMany(PemakaianDetail::class);
     }
 }

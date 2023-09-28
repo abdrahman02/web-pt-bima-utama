@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Http\Controllers\Controller;
 use App\Models\Barang;
-use App\Models\Pembelian;
 use App\Models\Suplier;
+use App\Models\Pembelian;
 use Illuminate\Http\Request;
+use App\Models\PembelianDetail;
+use App\Http\Controllers\Controller;
 
 class PembelianController extends Controller
 {
@@ -15,10 +16,10 @@ class PembelianController extends Controller
      */
     public function index()
     {
-        $pembelians = Pembelian::latest()->paginate(10)->withQueryString();
         $barangs = Barang::all();
         $supliers = Suplier::all();
-        return view('backend.pembelian.index', compact('pembelians', 'barangs', 'supliers'));
+        $pembelian_details = PembelianDetail::latest()->paginate(10)->withQueryString();
+        return view('backend.pembelian.index', compact('barangs', 'supliers', 'pembelian_details'));
     }
 
     /**
@@ -26,7 +27,16 @@ class PembelianController extends Controller
      */
     public function create()
     {
-        //
+        $cartPembelian = session('cartPembelian', []);
+        $grandTotal = 0;
+        if (!empty($cartPembelian)) {
+            foreach ($cartPembelian as $item) {
+                $grandTotal += $item['sub_total_harga'];
+            }
+        }
+        $supliers = Suplier::all();
+        $barangs = Barang::all();
+        return view('backend.pembelian.create', compact('supliers', 'barangs', 'cartPembelian', 'grandTotal'));
     }
 
     /**
@@ -34,43 +44,67 @@ class PembelianController extends Controller
      */
     public function store(Request $request)
     {
+        $cartPembelian = session('cartPembelian');
         $request->validate([
-            'barang_id' => 'required',
             'suplier_id' => 'required',
             'no_fakt_pembelian' => 'required',
             'tgl_pembelian' => 'required',
-            'jumlah' => 'required',
             'status' => 'required',
-            'harga' => 'required',
-            'jumlah_bayar' => 'required'
+            'grand_total_harga' => 'required',
+            'jumlah_bayar' => 'required',
         ]);
 
-        $item = new Pembelian();
-        $item->barang_id = $request->barang_id;
-        $item->suplier_id = $request->suplier_id;
-        $item->no_fakt_pembelian = $request->no_fakt_pembelian;
-        $item->tgl_pembelian = $request->tgl_pembelian;
-        $item->jumlah = $request->jumlah;
-        $item->status = $request->status;
-        $item->harga = $request->harga;
-        $item->jumlah_bayar = $request->jumlah_bayar;
-        $item->save();
+        // Simpan data pembelian
+        $pembelian = new Pembelian();
+        $pembelian->suplier_id = $request->suplier_id;
+        $pembelian->no_fakt_pembelian = $request->no_fakt_pembelian;
+        $pembelian->tgl_pembelian = $request->tgl_pembelian;
+        $pembelian->status = $request->status;
+        // Menghapus "Rp. " dan tanda koma (",") dari grand_total_harga dan jumlah_bayar jika diperlukan
+        $grand_total_harga = $request->grand_total_harga;
+        $jumlah_bayar = $request->jumlah_bayar;
+        if (strpos($grand_total_harga, 'Rp. ') !== false) {
+            $grand_total_harga = str_replace('Rp. ', '', $grand_total_harga);
+        }
+        if (strpos($grand_total_harga, ',') !== false) {
+            $grand_total_harga = str_replace(',', '', $grand_total_harga);
+        }
 
-        $item = Barang::findOrFail($request->barang_id);
-        // Konversi $request->jumlah ke tipe data integer
-        $jumlah = intval($request->jumlah);
-        // Perbarui stok dengan menambahkan jumlah pembelian
-        if ($item && is_numeric($jumlah)) {
-            $stok = intval($item->stok); // Konversi stok ke integer jika belum
-            $item->update([
-                'stok' => strval($stok + $jumlah) // Konversi kembali ke string setelah penambahan
+        if (strpos($jumlah_bayar, 'Rp. ') !== false) {
+            $jumlah_bayar = str_replace('Rp. ', '', $jumlah_bayar);
+        }
+        if (strpos($jumlah_bayar, ',') !== false) {
+            $jumlah_bayar = str_replace(',', '', $jumlah_bayar);
+        }
+        //
+        $pembelian->grand_total_harga = $grand_total_harga;
+        $pembelian->jumlah_bayar = $jumlah_bayar;
+        $pembelian->save();
+
+        foreach ($cartPembelian as $val) {
+            PembelianDetail::create([
+                'pembelian_id' => $pembelian->id,
+                'barang_id' => $val['barang_id'],
+                'jumlah' => $val['jumlah'],
+                'sub_total_harga' => $val['sub_total_harga'],
+            ]);
+            // Membuat instance model Barang berdasarkan ID
+            $barang = Barang::findOrFail($val['barang_id']);
+
+            // Memanggil metode update pada instance Barang
+            $barang->update([
+                'stok' => max(0, $barang->stok + $val['jumlah']),
+                'harga_beli_peritem' => $val['harga_peritem'],
+                'total_harga_beli' => $val['sub_total_harga'],
             ]);
         }
-        $item->harga_beli = $request->harga;
-        $item->update();
 
-        return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
+        // Hapus session cartPembelian atau keranjang belanja
+        $request->session()->forget('cartPembelian');
+
+        return redirect()->route('pembelian.index')->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
     }
+
 
     /**
      * Display the specified resource.
@@ -94,39 +128,49 @@ class PembelianController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'suplier_id' => 'required',
             'no_fakt_pembelian' => 'required',
             'tgl_pembelian' => 'required',
-            'jumlah' => 'required',
+            'jumlah' => 'required', //
             'status' => 'required',
-            'harga' => 'required',
+            'harga_peritem' => 'required', //
             'jumlah_bayar' => 'required'
         ]);
 
-        $item = Pembelian::findOrFail($id);
-        // Simpan jumlah lama pembelian sebelum diperbarui
-        $jumlahLama = $item->jumlah;
-        $item->barang_id = $item->barang_id;
-        $item->suplier_id = $request->suplier_id;
-        $item->no_fakt_pembelian = $request->no_fakt_pembelian;
-        $item->tgl_pembelian = $request->tgl_pembelian;
-        $item->jumlah = $request->jumlah;
-        $item->status = $request->status;
-        $item->harga = $request->harga;
-        $item->jumlah_bayar = $request->jumlah_bayar;
-        $item->update();
+        // ambil data pembelian detail
+        $pembelian_detail = PembelianDetail::findOrFail($id);
+        // cari data pembelian berdasarkan pembelian_id dari data pembelian detail
+        $pembelian_id = $pembelian_detail->pembelian_id;
 
+        // update data pembelian
+        $pembelian = Pembelian::findOrFail($pembelian_id);
+        $pembelian->no_fakt_pembelian = $request->no_fakt_pembelian;
+        $pembelian->tgl_pembelian = $request->tgl_pembelian;
+        $pembelian->status = $request->status;
+        $pembelian->jumlah_bayar = $request->jumlah_bayar;
+        $pembelian->update();
+
+        // Simpan jumlah lama dari pembelian detail sebelum diperbarui
+        $jumlahLama = $pembelian_detail->jumlah;
         // Menghitung perubahan jumlah pembelian
         $perubahanJumlah = $request->jumlah - $jumlahLama;
-        // Mengupdate stok barang
-        $barang = Barang::find($item->barang_id);
-        if ($barang) {
-            $stokBaru = max(0, $barang->stok + $perubahanJumlah);
-            $barang->update([
-                'stok' => $stokBaru,
-                'harga_beli' => $request->harga_beli, // Memastikan harga_beli barang diupdate
-            ]);
-        }
+        // update data pembelian detail
+        $pembelian_detail->jumlah = $request->jumlah;
+        $pembelian_detail->sub_total_harga = $request->sub_total_harga;
+        $pembelian_detail->update();
+
+        // ambil seluruh data pembelian detail yang memiliki pembelian_id sama
+        $grand_total_harga = PembelianDetail::where('pembelian_id', $pembelian_id)->sum('sub_total_harga');
+        // update grand total harga dari tabel pembelians
+        $pembelian->grand_total_harga = $grand_total_harga;
+        $pembelian->update();
+
+        // ambil barang_id dari data pembelian detail
+        $barang_id = $pembelian_detail->barang_id;
+        // cari barang berdasarkan barang_id pembelian detail
+        $barang = Barang::findOrFail($barang_id);
+        $stokBaru = max(0, $barang->stok + $perubahanJumlah);
+        $barang->stok = $stokBaru;
+        $barang->update();
 
         return back()->with('success', 'Sukses, 1 Data berhasil diperbaharui!');
     }
@@ -136,14 +180,15 @@ class PembelianController extends Controller
      */
     public function destroy(string $id)
     {
-        $pembelian = Pembelian::findOrFail($id);
+        $pembelian_detail = PembelianDetail::findOrFail($id);
 
+        // ambil pembelian_id dari data pembelian detail
+        $pembelian_id = $pembelian_detail->pembelian_id;
         // Menghitung perubahan jumlah pembelian
-        $perubahanJumlah = -$pembelian->jumlah;
+        $perubahanJumlah = -$pembelian_detail->jumlah;
 
         // Mengupdate stok barang
-        $barang = Barang::find($pembelian->barang_id);
-
+        $barang = Barang::find($pembelian_detail->barang_id);
         if ($barang) {
             $stokBaru = max(0, $barang->stok + $perubahanJumlah);
             $barang->update([
@@ -151,7 +196,18 @@ class PembelianController extends Controller
             ]);
         }
 
-        $pembelian->delete();
+        // cari data pembelian berdasarkan pembelian_id
+        $pembelian = Pembelian::findOrFail($pembelian_id);
+        // ambil seluruh data pembelian detail yang memiliki pembelian_id sama
+        $grand_total_harga = PembelianDetail::where('pembelian_id', $pembelian_id)->sum('sub_total_harga');
+
+
+        // update grand total harga dari tabel pembelians
+        $pembelian->grand_total_harga = $grand_total_harga;
+        $pembelian->update();
+
+        // hapus data pembelian detail
+        $pembelian_detail->delete();
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
@@ -159,22 +215,29 @@ class PembelianController extends Controller
     public function cariPembelian(Request $request)
     {
         $keyword = $request->input('keyword');
-        $pembelians = Pembelian::join('barangs', 'pembelians.barang_id', '=', 'barangs.id')
-            ->join('supliers', 'pembelians.suplier_id', '=', 'supliers.id')
+
+        $pembelian_details = PembelianDetail::join('barangs', 'pembelian_details.barang_id', '=', 'barangs.id')
+            ->join('pembelians', 'pembelian_details.pembelian_id', '=', 'pembelians.id')
+            ->join('supliers', 'pembelians.suplier_id', '=', 'supliers.id') // Join juga dengan tabel Suplier
             ->where(function ($query) use ($keyword) {
                 $query->where('barangs.nama_barang', 'like', '%' . $keyword . '%')
-                    ->orWhere('supliers.nama_suplier', 'like', '%' . $keyword . '%');
+                    ->orWhere('barangs.harga_beli_peritem', 'like', '%' . $keyword . '%')
+                    ->orWhere('pembelians.no_fakt_pembelian', 'like', '%' . $keyword . '%')
+                    ->orWhere('pembelians.tgl_pembelian', 'like', '%' . $keyword . '%')
+                    ->orWhere('pembelians.status', 'like', '%' . $keyword . '%')
+                    ->orWhere('pembelians.jumlah_bayar', 'like', '%' . $keyword . '%')
+                    ->orWhere('pembelians.grand_total_harga', 'like', '%' . $keyword . '%')
+                    ->orWhere('supliers.nama_suplier', 'like', '%' . $keyword . '%'); // Cari juga berdasarkan nama suplier
             })
-            ->orWhere('pembelians.tgl_pembelian', 'like', '%' . $keyword . '%')
-            ->orWhere('pembelians.jumlah', 'like', '%' . $keyword . '%')
-            ->orWhere('pembelians.harga', 'like', '%' . $keyword . '%')
-            ->orWhere('pembelians.jumlah_bayar', 'like', '%' . $keyword . '%')
-            ->select('pembelians.*')
+            ->orWhere('pembelian_details.jumlah', 'like', '%' . $keyword . '%')
+            ->orWhere('pembelian_details.sub_total_harga', 'like', '%' . $keyword . '%')
+            ->select('pembelian_details.*')
             ->paginate(10)
             ->withQueryString();
+
         $barangs = Barang::all();
         $supliers = Suplier::all();
 
-        return view('backend.pembelian.index', compact('pembelians', 'barangs', 'supliers'));
+        return view('backend.pembelian.index', compact('pembelian_details', 'barangs', 'supliers'));
     }
 }

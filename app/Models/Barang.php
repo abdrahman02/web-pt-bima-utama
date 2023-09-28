@@ -11,18 +11,17 @@ class Barang extends Model
 
     protected $guarded = ['id'];
 
-    public function pembelian()
-    {
-        return $this->hasMany(Pembelian::class);
+    public function pembelian_detail() {
+        return $this->hasMany(PembelianDetail::class);
     }
 
-    public function pemakaian()
+    public function pemakaian_detail()
     {
-        return $this->hasMany(Pemakaian::class);
+        return $this->hasMany(PemakaianDetail::class);
     }
 
-    public function proyek()
+    public function proyek_detail()
     {
-        return $this->hasMany(Proyek::class);
+        return $this->hasMany(ProyekDetail::class);
     }
 }

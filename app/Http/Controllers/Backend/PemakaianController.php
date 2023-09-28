@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Pemakaian;
+use App\Models\PemakaianDetail;
 use Illuminate\Http\Request;
 
 class PemakaianController extends Controller
@@ -14,9 +15,9 @@ class PemakaianController extends Controller
      */
     public function index()
     {
-        $pemakaians = Pemakaian::latest()->paginate(10)->withQueryString();
+        $pemakaian_details = PemakaianDetail::latest()->paginate(10)->withQueryString();
         $barangs = Barang::all();
-        return view('backend.pemakaian.index', compact('pemakaians', 'barangs'));
+        return view('backend.pemakaian.index', compact('pemakaian_details', 'barangs'));
     }
 
     /**
@@ -24,7 +25,15 @@ class PemakaianController extends Controller
      */
     public function create()
     {
-        //
+        $cartPemakaian = session('cartPemakaian', []);
+        $grandTotal = 0;
+        if (!empty($cartPemakaian)) {
+            foreach ($cartPemakaian as $item) {
+                $grandTotal += $item['sub_total_harga'];
+            }
+        }
+        $barangs = Barang::all();
+        return view('backend.pemakaian.create', compact('barangs', 'cartPemakaian', 'grandTotal'));
     }
 
     /**
@@ -32,27 +41,50 @@ class PemakaianController extends Controller
      */
     public function store(Request $request)
     {
+        $cartPemakaian = session('cartPemakaian');
         $request->validate([
-            'barang_id' => 'required',
             'jenis_pemakaian' => 'required',
             'tgl_pemakaian' => 'required',
-            'jumlah' => 'required',
+            'grand_total_harga' => 'required',
+            'keterangan_pemakaian' => 'nullable',
         ]);
 
-        $item = new Pemakaian();
-        $item->barang_id = $request->barang_id;
-        $item->jenis_pemakaian = $request->jenis_pemakaian;
-        $item->tgl_pemakaian = $request->tgl_pemakaian;
-        $item->jumlah = $request->jumlah;
-        $item->save();
+        $pemakaian = new Pemakaian();
+        $pemakaian->jenis_pemakaian = $request->jenis_pemakaian;
+        $pemakaian->tgl_pemakaian = $request->tgl_pemakaian;
+        // Menghapus "Rp. " dan tanda koma (",") dari grand_total_harga jika diperlukan
+        $grand_total_harga = $request->grand_total_harga;
+        if (strpos($grand_total_harga, 'Rp. ') !== false) {
+            $grand_total_harga = str_replace('Rp. ', '', $grand_total_harga);
+        }
+        if (strpos($grand_total_harga, ',') !== false) {
+            $grand_total_harga = str_replace(',', '', $grand_total_harga);
+        }
+        //
+        $pemakaian->grand_total_harga = $grand_total_harga;
+        $pemakaian->keterangan_pemakaian = $request->keterangan_pemakaian;
+        $pemakaian->save();
 
-        $item = Barang::findOrFail($request->barang_id);
-        if ($item) {
-            $item->update([
-                'stok' => max(0, $item->stok - $request->jumlah),
+        foreach ($cartPemakaian as $val) {
+            PemakaianDetail::create([
+                'pemakaian_id' => $pemakaian->id,
+                'barang_id' => $val['barang_id'],
+                'jumlah' => $val['jumlah'],
+                'sub_total_harga' => $val['sub_total_harga'],
+            ]);
+            // Membuat instance model Barang berdasarkan ID
+            $barang = Barang::findOrFail($val['barang_id']);
+
+            // Memanggil metode update pada instance Barang
+            $barang->update([
+                'stok' => max(0, $barang->stok - $val['jumlah']),
             ]);
         }
-        return back()->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
+
+        // Hapus session cartPemakaian atau keranjang belanja
+        $request->session()->forget('cartPemakaian');
+
+        return redirect()->route('pemakaian.index')->with('success', 'Sukses, 1 Data berhasil ditambahkan!');
     }
 
     /**
@@ -80,24 +112,45 @@ class PemakaianController extends Controller
             'jenis_pemakaian' => 'required',
             'tgl_pemakaian' => 'required',
             'jumlah' => 'required',
+            'sub_total_harga' => 'required',
+            'keterangan_pemakaian' => 'nullable',
         ]);
 
-        $item = Pemakaian::findOrFail($id);
-        $jumlahLama = $item->jumlah;
-        $item->barang_id = $item->barang_id;
-        $item->jenis_pemakaian = $request->jenis_pemakaian;
-        $item->tgl_pemakaian = $request->tgl_pemakaian;
-        $item->jumlah = $request->jumlah;
-        $item->update();
+        // ambil data pemakaian detail
+        $pemakaian_detail = PemakaianDetail::findOrFail($id);
+        // cari data pemakaian berdasarkan pemakaian_id dari data pemakaian detail
+        $pemakaian_id = $pemakaian_detail->pemakaian_id;
+
+        // update data pemakaian
+        $pemakaian = Pemakaian::findOrFail($pemakaian_id);
+        $pemakaian->jenis_pemakaian = $request->jenis_pemakaian;
+        $pemakaian->tgl_pemakaian = $request->tgl_pemakaian;
+        $pemakaian->keterangan_pemakaian = $request->keterangan_pemakaian;
+        $pemakaian->update();
+
+        // Simpan jumlah lama dari pemakaian detail sebelum diperbarui
+        $jumlahLama = $pemakaian_detail->jumlah;
+        // Menghitung perubahan jumlah pemakaian
         $perubahanJumlah = $request->jumlah - $jumlahLama;
 
-        $barang = Barang::findOrFail($item->barang_id);
-        if ($barang) {
-            $stok = $barang->stok - $perubahanJumlah;
-            $barang->update([
-                'stok' => max(0, $stok),
-            ]);
-        }
+        // update data pemakaian detail
+        $pemakaian_detail->jumlah = $request->jumlah;
+        $pemakaian_detail->sub_total_harga = $request->sub_total_harga;
+        $pemakaian_detail->update();
+
+        // ambil seluruh data pemakaian detail yang memiliki pemakaian_id sama
+        $grand_total_harga = PemakaianDetail::where('pemakaian_id', $pemakaian_id)->sum('sub_total_harga');
+        // update grand total harga dari tabel pemakaians
+        $pemakaian->grand_total_harga = $grand_total_harga;
+        $pemakaian->update();
+
+        // ambil barang_id dari data pemakaian detail
+        $barang_id = $pemakaian_detail->barang_id;
+        // cari barang berdasarkan barang_id pemakaian detail
+        $barang = Barang::findOrFail($barang_id);
+        $stokBaru = max(0, $barang->stok - $perubahanJumlah);
+        $barang->stok = $stokBaru;
+        $barang->update();
 
         return back()->with('success', 'Sukses, 1 Data berhasil diperbaharui!');
     }
@@ -107,17 +160,33 @@ class PemakaianController extends Controller
      */
     public function destroy(string $id)
     {
-        $item = Pemakaian::findOrFail($id);
-        $perubahanJumlah = $item->jumlah;
-        $barang = Barang::findOrFail($item->barang_id);
+        $pemakaian_detail = PemakaianDetail::findOrFail($id);
+
+        // ambil pemakaian_id dari data pemakaian detail
+        $pemakaian_id = $pemakaian_detail->pemakaian_id;
+        // Menghitung perubahan jumlah pemakaian
+        $perubahanJumlah = -$pemakaian_detail->jumlah;
+
+        // Mengupdate stok barang
+        $barang = Barang::find($pemakaian_detail->barang_id);
         if ($barang) {
-            $stok = $barang->stok + $perubahanJumlah;
+            $stokBaru = max(0, $barang->stok + $perubahanJumlah);
             $barang->update([
-                'stok' => max(0, $stok),
+                'stok' => $stokBaru,
             ]);
         }
 
-        $item->delete();
+        // cari data pemakaian berdasarkan pemakaian_id
+        $pemakaian = Pemakaian::findOrFail($pemakaian_id);
+        // ambil seluruh data pemakaian detail yang memiliki pemakaian_id sama
+        $grand_total_harga = PemakaianDetail::where('pemakaian_id', $pemakaian_id)->sum('sub_total_harga');
+
+        // update grand total harga dari tabel pemakaians
+        $pemakaian->grand_total_harga = $grand_total_harga;
+        $pemakaian->update();
+
+        // hapus data pemakaian detail
+        $pemakaian_detail->delete();
 
         return back()->with('success', 'Sukses, 1 Data berhasil dihapus!');
     }
@@ -125,18 +194,20 @@ class PemakaianController extends Controller
     public function cariPemakaian(Request $request)
     {
         $keyword = $request->input('keyword');
-        $pemakaians = Pemakaian::join('barangs', 'pemakaians.barang_id', '=', 'barangs.id')
+        $pemakaian_details = PemakaianDetail::join('barangs', 'pemakaian_details.barang_id', '=', 'barangs.id')
+            ->join('pemakaians', 'pemakaian_details.pemakaian_id', '=', 'pemakaians.id')
             ->where(function ($query) use ($keyword) {
-                $query->where('barangs.nama_barang', 'like', '%' . $keyword . '%');
+                $query->where('barangs.nama_barang', 'like', '%' . $keyword . '%')
+                    ->orWhere('pemakaians.jenis_pemakaian', 'like', '%' . $keyword . '%')
+                    ->orWhere('pemakaians.tgl_pemakaian', 'like', '%' . $keyword . '%')
+                    ->orWhere('pemakaians.keterangan_pemakaian', 'like', '%' . $keyword . '%');
             })
-            ->orWhere('pemakaians.jenis_pemakaian', 'like', '%' . $keyword . '%')
-            ->orWhere('pemakaians.tgl_pemakaian', 'like', '%' . $keyword . '%')
-            ->orWhere('pemakaians.jumlah', 'like', '%' . $keyword . '%')
-            ->select('pemakaians.*')
+            ->orWhere('pemakaian_details.jumlah', 'like', '%' . $keyword . '%')
+            ->select('pemakaian_details.*')
             ->paginate(10)
             ->withQueryString();
         $barangs = Barang::all();
 
-        return view('backend.pemakaian.index', compact('pemakaians', 'barangs'));
+        return view('backend.pemakaian.index', compact('pemakaian_details', 'barangs'));
     }
 }
